@@ -557,7 +557,11 @@ class Template:
         inputs = res[0]
         if not self._is_training and '_data' in inputs:
             data = inputs.pop('_data')
-            data = to_device(data, self.model.device)
+            # Handle PeftModel wrapper - get device from base model
+            model_for_device = self.model
+            if isinstance(self.model, PeftModel):
+                model_for_device = self.model.base_model.model
+            data = to_device(data, model_for_device.device)
             inputs.update(self._post_encode(self.model, data))
         return res if not streaming else inputs
 
@@ -2482,19 +2486,23 @@ class InternvlTemplate(Template):
         return inputs, {}
 
     def _post_encode(self, model, data: Any) -> Dict[str, Any]:
-        embedding = model.get_input_embeddings()
+        # Handle PeftModel wrapper - get base model for feature extraction
+        base_model = model
+        if isinstance(model, PeftModel):
+            base_model = model.base_model.model
+        embedding = base_model.get_input_embeddings()
         device = embedding.weight.device
         input_ids = data['input_ids']
         inputs_embeds = embedding(input_ids[None])[0].to(device=device)
         pixel_values = data['pixel_values']
         if pixel_values is not None:
             pixel_values = pixel_values.to(device=device)
-            vit_embeds = model.extract_feature(pixel_values).to(device=device)
+            vit_embeds = base_model.extract_feature(pixel_values).to(device=device)
             selected = (input_ids == self.tokenizer.encode('<IMG_CONTEXT>', add_special_tokens=False)[0])
             inputs_embeds[selected] = vit_embeds.reshape(-1, vit_embeds.shape[-1])
         elif is_deepspeed_enabled():
             dummy_pixel_values = torch.zeros((1, 3, 32, 32), device=device, dtype=inputs_embeds.dtype)
-            vit_embeds = model.extract_feature(dummy_pixel_values).to(device=device)
+            vit_embeds = base_model.extract_feature(dummy_pixel_values).to(device=device)
             inputs_embeds += vit_embeds.mean() * 0.
         return {'inputs_embeds': inputs_embeds}
 
@@ -2571,7 +2579,11 @@ class Internvl2Template(InternvlTemplate):
             max_num = get_env_args('max_num', int, 1 if has_video else 12)
             pixel_values = [transform_image(image, input_size, max_num) for image in images]
             num_patches = [pv.shape[0] for pv in pixel_values]
-            pixel_values = torch.cat(pixel_values).to(self.model.dtype)
+            # Handle PeftModel wrapper - get dtype from base model
+            model_for_dtype = self.model
+            if isinstance(self.model, PeftModel):
+                model_for_dtype = self.model.base_model.model
+            pixel_values = torch.cat(pixel_values).to(model_for_dtype.dtype)
         else:
             pixel_values = None
             num_patches = []
