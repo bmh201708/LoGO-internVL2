@@ -1,15 +1,37 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=5
+# 参考 FedMABench 的方式，使用 JSONL 数据集进行推理
+# 使用方法: bash infer/infer.sh [DATASET_PATH]
+# 默认使用 data/Val_100.jsonl
+
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-export MAX_PIXELS=400000
+export MAX_PIXELS=300000
 export MAX_NUM=6
 
+# 默认数据集
+GPU_ID=${1:-5}
+TEST_DATA="${2:-data/Val_100.jsonl}"
+
 # 使用 global_lora_5（最新的 checkpoint）
-LORA_CKPT="/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Office_internvl2-2b/internvl2-2b/v5-20260117-122844/global_lora_5"
+# 注意：你需要确保这个路径是正确的，或者根据需要修改
+LORA_CKPT="/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Entertainment_internvl2-2b/internvl2-2b/v4-20260119-232917/global_lora_2"
+
+echo "Running inference with dataset: $TEST_DATA"
+echo "LoRA Checkpoint: $LORA_CKPT"
+
+export CUDA_VISIBLE_DEVICES=$GPU_ID
+
+echo "==========================================="
+echo "InternVL2 Infer测试"
+echo "==========================================="
+echo "GPU: $GPU_ID"
+echo "LoRA: $LORA_CKPT"
+echo "Dataset: $TEST_DATA"
+echo "==========================================="
 
 swift infer \
   --ckpt_dir "$LORA_CKPT" \
   --model_type internvl2-2b \
   --model_id_or_path /home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B \
-  --sft_type lora
+  --sft_type lora \
+  --val_dataset "$TEST_DATA"
