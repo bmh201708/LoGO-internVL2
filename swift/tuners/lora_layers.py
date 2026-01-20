@@ -602,6 +602,10 @@ class Linear(LoRAActivationMixin, _Linear):
         Mixture mode forward: 每个 LoRA 单独计算，然后加权求和。
         
         这是论文的核心实现：output = Σ(wᵢ × LoRAᵢ(x))
+        
+        注意：Mixture 模式不检查 is_activated，因为：
+        1. 权重由 lora_mapping 控制（权重为0的adapter不影响结果）
+        2. Swift 的 set_active_adapters 是无效函数
         """
         # 先计算 base layer 输出
         result = self.base_layer(x, *args, **kwargs)
@@ -612,15 +616,24 @@ class Linear(LoRAActivationMixin, _Linear):
         torch_result_dtype = result.dtype
         lora_mapping = ctx.lora_mapping  # (batch_size, num_adapters)
         adapter_names = ctx.adapter_names
+        batch_size = x.shape[0]
         
-        # 收集所有活跃 LoRA 的输出
+        # 收集所有存在于该层的 LoRA 输出
+        # 不检查 is_activated，因为权重由 lora_mapping 控制
         lora_outputs = []
         valid_adapter_indices = []
         
         for idx, adapter_name in enumerate(adapter_names):
+            # 只检查该层是否有这个 LoRA（不检查 is_activated）
             if adapter_name not in self.lora_A.keys():
                 continue
-            if not self.is_activated(adapter_name):
+            
+            # 检查权重是否为正（优化：跳过权重为0的adapter）
+            if idx < lora_mapping.shape[1]:
+                weight_val = lora_mapping[0, idx].item() if batch_size == 1 else lora_mapping[:, idx].max().item()
+                if weight_val <= 0:
+                    continue
+            else:
                 continue
                 
             lora_A = self.lora_A[adapter_name]
@@ -646,17 +659,13 @@ class Linear(LoRAActivationMixin, _Linear):
         # Mixture: 加权求和
         # lora_mapping: (batch, num_adapters)
         # lora_outputs: list of (batch, seq_len, hidden_dim)
-        batch_size = x.shape[0]
         
         # 提取对应的权重
         weights = []
         for idx in valid_adapter_indices:
-            if idx < lora_mapping.shape[1]:
-                # (batch,) -> (batch, 1, 1) for broadcasting
-                w = lora_mapping[:batch_size, idx].view(batch_size, 1, 1)
-                weights.append(w)
-            else:
-                weights.append(torch.zeros(batch_size, 1, 1, device=x.device))
+            # (batch,) -> (batch, 1, 1) for broadcasting
+            w = lora_mapping[:batch_size, idx].view(batch_size, 1, 1)
+            weights.append(w)
         
         # 加权求和: Σ(wᵢ × LoRAᵢ(x))
         weighted_sum = torch.zeros_like(lora_outputs[0])

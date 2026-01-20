@@ -69,7 +69,12 @@ def parse_args():
                         help='Token position for signal computation')
     parser.add_argument('--combination_type', type=str, default='linear',
                         choices=['linear', 'svd', 'cat'],
-                        help='LoRA merging method')
+                        help='LoRA combination method for add_weighted_adapter')
+    parser.add_argument('--merge_method', type=str, default='mixture',
+                        choices=['mixture', 'add_weighted_adapter'],
+                        help='LoRA merging method: mixture (output-level, 论文推荐) or add_weighted_adapter (parameter-level)')
+    parser.add_argument('--no_baseline_calibration', action='store_true',
+                        help='Disable baseline calibration for signal extraction')
     
     # Generation settings
     parser.add_argument('--max_new_tokens', type=int, default=512)
@@ -159,9 +164,10 @@ def run_logo_inference(args):
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
     time_str = dt.datetime.now().strftime('%Y%m%d-%H%M%S')
+    merge_suffix = 'mix' if args.merge_method == 'mixture' else 'awa'  # awa = add_weighted_adapter
     output_path = os.path.join(
         args.output_dir, 
-        f'logo_results_{args.signal_type}_k{args.top_k}_{time_str}.jsonl'
+        f'logo_results_{args.signal_type}_k{args.top_k}_{merge_suffix}_{time_str}.jsonl'
     )
     
     # Load test data
@@ -193,6 +199,9 @@ def run_logo_inference(args):
     
     # Initialize LOGO engine
     logger.info("Initializing LOGO engine...")
+    # 是否使用基线校准
+    use_baseline = not args.no_baseline_calibration
+    
     engine = LOGOEngine(
         base_model=model,
         lora_configs=lora_configs,
@@ -200,7 +209,8 @@ def run_logo_inference(args):
         signal_type=args.signal_type,
         target_block_idx=args.target_block_idx,
         token_position=args.token_position,
-        combination_type=args.combination_type
+        combination_type=args.combination_type,
+        use_baseline_calibration=use_baseline
     )
     
     # Load all LoRAs
@@ -211,10 +221,12 @@ def run_logo_inference(args):
     template.model = engine.model
     
     # Compute baseline signals for calibration (if using norm/entropy signal type)
-    if args.signal_type in ['norm', 'entropy']:
+    if args.signal_type in ['norm', 'entropy'] and use_baseline:
         logger.info("Computing baseline signals for calibration...")
         engine.set_tokenizer(tokenizer)
         engine.compute_baseline(tokenizer=tokenizer)
+    else:
+        logger.info("Baseline calibration disabled - using raw signals")
     
     # Print engine info
     logger.info(f"LOGO Engine Info: {engine.get_adapter_info()}")
@@ -268,53 +280,93 @@ def run_logo_inference(args):
             # LOGO: Extract signals and select adapters
             selected_loras, weights = engine.process_input(**signal_inputs)
             
-            # Create lora_mapping for Mixture mode
-            # lora_mapping has shape (batch_size, num_adapters)
-            lora_mapping = engine.get_lora_mapping(
-                selected_names=selected_loras,
-                weights=weights,
-                batch_size=1,
-                device=engine.model.device
-            )
-            
-            # Ensure all adapters are active for mixture mode
-            # Swift 模型使用 set_active_adapters 来激活多个适配器
-            if hasattr(engine.model, 'set_active_adapters'):
-                engine.model.set_active_adapters(engine.adapter_names)
-            elif hasattr(engine.model, 'base_model') and hasattr(engine.model.base_model, 'set_active_adapters'):
-                engine.model.base_model.set_active_adapters(engine.adapter_names)
-            
             # Update template model
             template.model = engine.model
             
-            # Generate response using Mixture mode (论文 Section 3.3)
-            # output = Σ(w_i × LoRA_i(x)) - weighted sum of individual LoRA outputs
-            if resolved_images:
-                response, _ = inference(
-                    engine.model,
-                    template,
-                    adjusted_query,
-                    history=[],
-                    system=None,
-                    images=resolved_images,
-                    max_new_tokens=args.max_new_tokens,
-                    temperature=args.temperature,
-                    merging_type='mixture',  # Use Mixture mode
-                    lora_mapping=lora_mapping
+            # 根据 merge_method 选择不同的融合方式
+            if args.merge_method == 'mixture':
+                # ==================== Mixture Mode (论文 Section 3.3) ====================
+                # output = Σ(wᵢ × LoRAᵢ(x)) - 输出级别加权求和
+                # 每个 LoRA 单独计算输出，然后加权混合
+                
+                # Create lora_mapping for Mixture mode
+                # lora_mapping has shape (batch_size, num_adapters)
+                lora_mapping = engine.get_lora_mapping(
+                    selected_names=selected_loras,
+                    weights=weights,
+                    batch_size=1,
+                    device=engine.model.device
                 )
+                
+                # Note: Mixture 模式在 _mixture_forward 中直接访问所有存在的 LoRA
+                # 权重由 lora_mapping 控制，权重为0的adapter会被跳过
+                
+                if resolved_images:
+                    response, _ = inference(
+                        engine.model,
+                        template,
+                        adjusted_query,
+                        history=[],
+                        system=None,
+                        images=resolved_images,
+                        max_new_tokens=args.max_new_tokens,
+                        temperature=args.temperature,
+                        merging_type='mixture',
+                        lora_mapping=lora_mapping,
+                        mixture_adapter_names=engine.adapter_names
+                    )
+                else:
+                    response, _ = inference(
+                        engine.model,
+                        template,
+                        adjusted_query,
+                        history=[],
+                        system=None,
+                        max_new_tokens=args.max_new_tokens,
+                        temperature=args.temperature,
+                        merging_type='mixture',
+                        lora_mapping=lora_mapping,
+                        mixture_adapter_names=engine.adapter_names
+                    )
             else:
-                # Text-only inference
-                response, _ = inference(
-                    engine.model,
-                    template,
-                    adjusted_query,
-                    history=[],
-                    system=None,
-                    max_new_tokens=args.max_new_tokens,
-                    temperature=args.temperature,
-                    merging_type='mixture',  # Use Mixture mode
-                    lora_mapping=lora_mapping
+                # ==================== add_weighted_adapter Mode ====================
+                # 参数级别融合：先合并 LoRA 参数，再进行推理
+                # 使用 PEFT 的 add_weighted_adapter 方法
+                
+                # 直接使用已选择的 adapters 和 weights 进行合并
+                engine.merge_with_weights(
+                    adapter_names=selected_loras,
+                    weights=weights,
+                    combination_type=args.combination_type
                 )
+                
+                # 更新 template model（合并后模型状态已改变）
+                template.model = engine.model
+                
+                if resolved_images:
+                    response, _ = inference(
+                        engine.model,
+                        template,
+                        adjusted_query,
+                        history=[],
+                        system=None,
+                        images=resolved_images,
+                        max_new_tokens=args.max_new_tokens,
+                        temperature=args.temperature
+                    )
+                else:
+                    response, _ = inference(
+                        engine.model,
+                        template,
+                        adjusted_query,
+                        history=[],
+                        system=None,
+                        max_new_tokens=args.max_new_tokens,
+                        temperature=args.temperature
+                    )
+                
+                # 清理合并的 adapter
+                engine.reset_merged_adapter()
             
             result = {
                 'idx': idx,
@@ -324,7 +376,8 @@ def run_logo_inference(args):
                 'selected_loras': selected_loras,
                 'weights': weights,
                 'num_images': len(resolved_images),
-                'signal_type': args.signal_type
+                'signal_type': args.signal_type,
+                'merge_method': args.merge_method
             }
             
             if args.debug:

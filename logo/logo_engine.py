@@ -440,6 +440,68 @@ class LOGOEngine:
         
         return selected_names, weights
     
+    def merge_with_weights(
+        self,
+        adapter_names: List[str],
+        weights: List[float],
+        combination_type: Optional[str] = None
+    ) -> str:
+        """
+        Directly merge adapters with given weights (no re-selection).
+        
+        Args:
+            adapter_names: List of adapter names to merge
+            weights: Corresponding weights (should already be normalized)
+            combination_type: Merging method ('linear', 'svd', 'cat')
+            
+        Returns:
+            Name of the merged adapter
+        """
+        if combination_type is None:
+            combination_type = self.combination_type
+            
+        if not adapter_names:
+            logger.warning("No adapters to merge!")
+            return None
+            
+        # Create unique merged adapter name
+        self.merge_count += 1
+        merged_name = f'logo_merged_{self.merge_count}'
+        
+        logger.info(f"Merging adapters: {list(zip(adapter_names, [f'{w:.3f}' for w in weights]))}")
+        
+        # Merge using Swift's add_weighted_adapter
+        try:
+            self.model.add_weighted_adapter(
+                adapters=adapter_names,
+                weights=weights,
+                adapter_name=merged_name,
+                combination_type=combination_type
+            )
+            
+            # Set the merged adapter as active
+            if hasattr(self.model, 'set_adapter'):
+                self.model.set_adapter(merged_name)
+            elif hasattr(self.model, 'base_model') and hasattr(self.model.base_model, 'set_adapter'):
+                self.model.base_model.set_adapter(merged_name)
+                
+            self.current_merged_adapter = merged_name
+            logger.info(f"Created and activated merged adapter: {merged_name}")
+            
+        except Exception as e:
+            logger.error(f"Failed to merge adapters: {e}")
+            import traceback
+            traceback.print_exc()
+            # Fallback: just use the top-1 adapter
+            if adapter_names:
+                top_adapter = adapter_names[0]
+                logger.info(f"Falling back to single adapter: {top_adapter}")
+                if hasattr(self.model, 'set_adapter'):
+                    self.model.set_adapter(top_adapter)
+                self.current_merged_adapter = top_adapter
+                    
+        return merged_name
+    
     def reset_merged_adapter(self) -> None:
         """
         Reset to default state after processing an input.
