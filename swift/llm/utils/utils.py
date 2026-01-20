@@ -866,6 +866,18 @@ def inference(model: PreTrainedModel,
             print(f'[QUERY]{query}\n{output_prefix}', end='')
 
     return_dict = generation_config.return_dict_in_generate
+    # Fix for inputs_embeds: set max_length on generation_config to avoid validation issues
+    # Note: PeftModel.generate() uses model.generation_config, not the passed generation_config
+    if 'inputs_embeds' in inputs:
+        embeds_len = inputs['inputs_embeds'].shape[1]
+        if generation_config.max_new_tokens is not None:
+            generation_config.max_length = embeds_len + generation_config.max_new_tokens
+        elif generation_config.max_length is not None and generation_config.max_length < embeds_len:
+            generation_config.max_length = embeds_len + 512  # default additional tokens
+        # Also update model.generation_config for PeftModel compatibility
+        if hasattr(model, 'generation_config'):
+            model.generation_config.max_length = generation_config.max_length
+            model.generation_config.max_new_tokens = generation_config.max_new_tokens
     generate_ids = model.generate(streamer=streamer, generation_config=generation_config, **inputs)
     if return_dict:
         res = dict(generate_ids)

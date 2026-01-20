@@ -2493,7 +2493,8 @@ class InternvlTemplate(Template):
         embedding = base_model.get_input_embeddings()
         device = embedding.weight.device
         input_ids = data['input_ids']
-        inputs_embeds = embedding(input_ids[None])[0].to(device=device)
+        # Clone to avoid in-place operation error when LoRA is loaded (requires_grad=True)
+        inputs_embeds = embedding(input_ids[None])[0].to(device=device).clone()
         pixel_values = data['pixel_values']
         if pixel_values is not None:
             pixel_values = pixel_values.to(device=device)

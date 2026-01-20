@@ -4,6 +4,9 @@ import os
 import sys
 import json
 
+# 指定使用的 GPU（避免 OOM）
+os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
@@ -84,7 +87,7 @@ def debug_encode():
     
     # Now load LoRA
     print("\n3. Loading LoRA...")
-    lora_path = 'lora_checkpoints/internvl2_lora_app/app_lora_adidas'
+    lora_path = '/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Entertainment_internvl2-2b/internvl2-2b/v4-20260119-232917/global_lora_2'
     model = Swift.from_pretrained(
         model,
         lora_path,
