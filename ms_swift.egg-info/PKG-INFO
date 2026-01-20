@@ -1,0 +1,38 @@
+Metadata-Version: 2.4
+Name: ms-swift
+Version: 2.6.0.dev0
+Summary: Swift: Scalable lightWeight Infrastructure for Fine-Tuning
+Home-page: https://github.com/modelscope/swift
+Author: DAMO ModelScope teams
+Author-email: contact@modelscope.cn
+License: Apache License 2.0
+Keywords: python,petl,efficient tuners
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Description-Content-Type: text/markdown
+Requires-Dist: datasets<3.0
+Requires-Dist: modelscope[datasets]<1.19,>=1.17
+Provides-Extra: llm
+Provides-Extra: aigc
+Provides-Extra: eval
+Provides-Extra: seq-parallel
+Provides-Extra: all
+Requires-Dist: datasets<3.0; extra == "all"
+Requires-Dist: modelscope[datasets]<1.19,>=1.17; extra == "all"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: summary

@@ -1,0 +1,9 @@
+numpy>=1.17
+packaging>=20.0
+psutil
+pyyaml
+torch>=1.13.0
+transformers
+accelerate>=0.21.0
+safetensors
+huggingface-hub>=0.17.0

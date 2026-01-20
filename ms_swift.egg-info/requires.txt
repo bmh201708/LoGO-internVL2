@@ -1,0 +1,14 @@
+datasets<3.0
+modelscope[datasets]<1.19,>=1.17
+
+[aigc]
+
+[all]
+datasets<3.0
+modelscope[datasets]<1.19,>=1.17
+
+[eval]
+
+[llm]
+
+[seq_parallel]
