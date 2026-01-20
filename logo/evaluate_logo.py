@@ -39,6 +39,11 @@ def parse_args():
     parser.add_argument('--signal_type', type=str, default='norm',
                        choices=['norm', 'entropy', 'uniform'],
                        help='Signal type for LoRA selection')
+    parser.add_argument('--merge_method', type=str, default='mixture',
+                       choices=['mixture', 'add_weighted_adapter'],
+                       help='Merge method: mixture (output-level) or add_weighted_adapter (parameter-level)')
+    parser.add_argument('--no_baseline_calibration', action='store_true', default=True,
+                       help='Disable baseline calibration (default: True)')
     
     # 选择测试类型
     parser.add_argument('--app_only', action='store_true', help='Only test app-level')
@@ -77,6 +82,8 @@ def run_inference(
     gpu_id: int,
     top_k: int,
     signal_type: str,
+    merge_method: str = 'mixture',
+    no_baseline_calibration: bool = True,
     is_category: bool = False,
     debug: bool = False,
     dry_run: bool = False
@@ -89,11 +96,15 @@ def run_inference(
         '--output_dir', output_dir,
         '--top_k', str(top_k),
         '--signal_type', signal_type,
+        '--merge_method', merge_method,
         '--target_block_idx', '-1',
         '--token_position', 'last',
         '--max_new_tokens', '512',
         '--temperature', '0.0',
     ]
+    
+    if no_baseline_calibration:
+        cmd.append('--no_baseline_calibration')
     
     # 根据类型选择配置
     if is_category:
@@ -255,6 +266,8 @@ def main():
     print(f"GPU ID:       {args.gpu}")
     print(f"Top-K:        {args.top_k}")
     print(f"Signal Type:  {args.signal_type}")
+    print(f"Merge Method: {args.merge_method}")
+    print(f"No Baseline:  {args.no_baseline_calibration}")
     print(f"Output Dir:   {output_dir}")
     print("=" * 70)
     
@@ -299,6 +312,8 @@ def main():
                 gpu_id=args.gpu,
                 top_k=args.top_k,
                 signal_type=args.signal_type,
+                merge_method=args.merge_method,
+                no_baseline_calibration=args.no_baseline_calibration,
                 is_category=False,
                 debug=args.debug,
                 dry_run=args.dry_run
@@ -369,6 +384,8 @@ def main():
                 gpu_id=args.gpu,
                 top_k=args.top_k,
                 signal_type=args.signal_type,
+                merge_method=args.merge_method,
+                no_baseline_calibration=args.no_baseline_calibration,
                 is_category=True,
                 debug=args.debug,
                 dry_run=args.dry_run
@@ -428,7 +445,9 @@ def main():
             f.write("**Configuration:**\n")
             f.write(f"- GPU ID: {args.gpu}\n")
             f.write(f"- Top-K: {args.top_k}\n")
-            f.write(f"- Signal Type: {args.signal_type}\n\n")
+            f.write(f"- Signal Type: {args.signal_type}\n")
+            f.write(f"- Merge Method: {args.merge_method}\n")
+            f.write(f"- No Baseline Calibration: {args.no_baseline_calibration}\n\n")
             
             if results['app_results']:
                 f.write("---\n\n")
