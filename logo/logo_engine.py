@@ -252,9 +252,92 @@ class LOGOEngine:
         combination_type: Optional[str] = None
     ) -> Tuple[List[str], List[float]]:
         """
-        Select top-K LoRAs and merge them with signal-based weights.
+        Select top-K LoRAs and compute their weights.
+        
+        NOTE: This method now uses the Mixture mode from the paper (Section 3.3),
+        which computes weighted sum of LoRA outputs at runtime, rather than
+        merging parameters beforehand.
         
         Implements Section 3.2 (selection) and Section 3.3 (merging) of the paper.
+        
+        Args:
+            signals: Dict mapping adapter names to signal scores
+            combination_type: Merging method (for backward compatibility, ignored in mixture mode)
+            
+        Returns:
+            Tuple of (selected adapter names, their weights)
+        """
+        # Select top-K adapters (Equation 4)
+        available_signals = {k: v for k, v in signals.items() if k in self.adapter_names}
+        selected_names = select_top_k(available_signals, self.top_k)
+        
+        if not selected_names:
+            logger.warning("No adapters selected!")
+            return [], []
+        
+        # Get signals for selected adapters only
+        selected_signals = {name: signals[name] for name in selected_names}
+        
+        # Normalize to get weights (Equation 5)
+        weights_dict = normalize_weights(selected_signals)
+        weights = [weights_dict[name] for name in selected_names]
+        
+        logger.info(f"Selected LoRAs: {list(zip(selected_names, [f'{w:.3f}' for w in weights]))}")
+        
+        # Store current selection for mixture mode
+        self._current_selected_names = selected_names
+        self._current_weights = weights
+        
+        return selected_names, weights
+    
+    def get_lora_mapping(
+        self,
+        selected_names: List[str],
+        weights: List[float],
+        batch_size: int = 1,
+        device: Optional[torch.device] = None
+    ) -> torch.Tensor:
+        """
+        Create lora_mapping tensor for Mixture mode inference.
+        
+        The lora_mapping tensor has shape (batch_size, num_adapters) where:
+        - Each row corresponds to a sample in the batch
+        - Each column corresponds to an adapter (in the order of self.adapter_names)
+        - Values are the weights for selected adapters, 0 for non-selected
+        
+        Args:
+            selected_names: List of selected adapter names
+            weights: Corresponding weights for selected adapters
+            batch_size: Batch size
+            device: Device for the tensor
+            
+        Returns:
+            lora_mapping tensor of shape (batch_size, num_adapters)
+        """
+        if device is None:
+            device = next(self.model.parameters()).device
+        
+        num_adapters = len(self.adapter_names)
+        lora_mapping = torch.zeros(batch_size, num_adapters, device=device)
+        
+        # Fill in the weights for selected adapters
+        for name, weight in zip(selected_names, weights):
+            if name in self.adapter_names:
+                idx = self.adapter_names.index(name)
+                lora_mapping[:, idx] = weight
+        
+        return lora_mapping
+    
+    def select_and_merge_legacy(
+        self,
+        signals: Dict[str, float],
+        combination_type: Optional[str] = None
+    ) -> Tuple[List[str], List[float]]:
+        """
+        Legacy method: Parameter-level merging using add_weighted_adapter.
+        
+        This creates a new merged adapter by combining LoRA parameters.
+        Use this for debugging or comparison with the mixture mode.
         
         Args:
             signals: Dict mapping adapter names to signal scores

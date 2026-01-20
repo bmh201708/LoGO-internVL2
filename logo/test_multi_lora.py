@@ -82,24 +82,39 @@ def test_logo_inference():
     
     print(f"\n   Loaded {len(loaded_adapters)} adapters")
     
-    # Merge adapters
+    # Prepare for Mixture mode (论文中的方法)
     if len(loaded_adapters) >= 2:
-        print("\n4. Merging adapters...")
+        print("\n4. Preparing Mixture mode (论文 Section 3.3)...")
         weights = [0.5, 0.3, 0.2][:len(loaded_adapters)]
         total = sum(weights)
         weights = [w/total for w in weights]
         
-        model.add_weighted_adapter(
-            adapters=loaded_adapters,
-            weights=weights,
-            adapter_name='logo_merged',
-            combination_type='linear'
-        )
+        # 激活所有 LoRA（Mixture 模式需要）
+        # Swift 模型使用 set_active_adapters 来激活多个适配器
+        if hasattr(model, 'set_active_adapters'):
+            model.set_active_adapters(loaded_adapters)
+            print(f"   [OK] Activated adapters via set_active_adapters")
+        elif hasattr(model, 'base_model') and hasattr(model.base_model, 'set_active_adapters'):
+            model.base_model.set_active_adapters(loaded_adapters)
+            print(f"   [OK] Activated adapters via base_model.set_active_adapters")
+        else:
+            # Fallback: 尝试逐个激活
+            for adapter_name in loaded_adapters:
+                if hasattr(model, 'activate_adapter'):
+                    model.activate_adapter(adapter_name)
+            print(f"   [OK] Activated adapters individually")
         
-        if hasattr(model, 'set_adapter'):
-            model.set_adapter('logo_merged')
+        # 创建 lora_mapping tensor
+        num_adapters = len(loaded_adapters)
+        lora_mapping = torch.zeros(1, num_adapters)
+        for i, w in enumerate(weights):
+            lora_mapping[0, i] = w
+        lora_mapping = lora_mapping.to(next(model.parameters()).device)
             
-        print(f"   [OK] Merged: {list(zip(loaded_adapters, weights))}")
+        print(f"   Mixture weights: {list(zip(loaded_adapters, weights))}")
+        print(f"   lora_mapping shape: {lora_mapping.shape}")
+    else:
+        lora_mapping = None
     
     # **IMPORTANT**: Update template.model to the wrapped model
     template.model = model
@@ -133,6 +148,8 @@ def test_logo_inference():
         print(f"   Query: {non_image_lines[-1] if non_image_lines else 'N/A'}")
         
         if resolved_images:
+            # 使用 Mixture 模式推理（论文 Section 3.3）
+            # output = Σ(wᵢ × LoRAᵢ(x)) - 输出级别加权求和
             response, _ = inference(
                 model,
                 template,
@@ -141,10 +158,12 @@ def test_logo_inference():
                 system=None,
                 images=resolved_images,
                 max_new_tokens=100,
-                temperature=0.0
+                temperature=0.0,
+                merging_type='mixture' if lora_mapping is not None else None,
+                lora_mapping=lora_mapping
             )
             print(f"   Response: {response[:200]}...")
-            print("   [OK] Inference works with merged LoRA!")
+            print("   [OK] Inference works with Mixture mode!")
         else:
             print("   [SKIP] No valid images")
             

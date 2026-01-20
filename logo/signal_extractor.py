@@ -600,13 +600,19 @@ class LOGOSignalExtractor:
         logger.info(f"Found {len(target_layers)} LoRA layers in target block")
         
         # Prepare model inputs
+        # Note: Cannot specify both input_ids and inputs_embeds at the same time
+        # For vision-language models, inputs_embeds already contains the full input
+        # including image features, so we should NOT pass input_ids when inputs_embeds exists
         model_inputs = {}
-        if input_ids is not None:
+        if inputs_embeds is not None:
+            # Use inputs_embeds (already contains image features)
+            model_inputs['inputs_embeds'] = inputs_embeds
+            # Do NOT add input_ids when using inputs_embeds
+        elif input_ids is not None:
             model_inputs['input_ids'] = input_ids
+        
         if attention_mask is not None:
             model_inputs['attention_mask'] = attention_mask
-        if inputs_embeds is not None:
-            model_inputs['inputs_embeds'] = inputs_embeds
         if pixel_values is not None:
             model_inputs['pixel_values'] = pixel_values
         model_inputs.update(kwargs)

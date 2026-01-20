@@ -812,6 +812,8 @@ def inference(model: PreTrainedModel,
               adapter_names: Optional[List[str]] = None,
               prompt_prefix: str = '[PROMPT]',
               output_prefix: str = '[OUTPUT]',
+              merging_type: Optional[str] = None,
+              lora_mapping: Optional['torch.Tensor'] = None,
               **kwargs) -> Union[Tuple[str, History], Dict[str, Any]]:
     """
     generation_config: Priority: generation_config > model.generation_config.
@@ -878,7 +880,15 @@ def inference(model: PreTrainedModel,
         if hasattr(model, 'generation_config'):
             model.generation_config.max_length = generation_config.max_length
             model.generation_config.max_new_tokens = generation_config.max_new_tokens
-    generate_ids = model.generate(streamer=streamer, generation_config=generation_config, **inputs)
+    
+    # Add LOGO mixture mode parameters if provided
+    generate_kwargs = dict(inputs)
+    if merging_type is not None:
+        generate_kwargs['merging_type'] = merging_type
+    if lora_mapping is not None:
+        generate_kwargs['lora_mapping'] = lora_mapping
+    
+    generate_ids = model.generate(streamer=streamer, generation_config=generation_config, **generate_kwargs)
     if return_dict:
         res = dict(generate_ids)
         generate_ids = generate_ids['sequences']

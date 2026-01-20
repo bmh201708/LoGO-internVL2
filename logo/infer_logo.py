@@ -265,13 +265,30 @@ def run_logo_inference(args):
             if 'pixel_values' in inputs:
                 signal_inputs['pixel_values'] = inputs['pixel_values'].to(engine.model.device)
             
-            # LOGO: Extract signals and merge adapters
+            # LOGO: Extract signals and select adapters
             selected_loras, weights = engine.process_input(**signal_inputs)
             
-            # Update template model with merged adapter
+            # Create lora_mapping for Mixture mode
+            # lora_mapping has shape (batch_size, num_adapters)
+            lora_mapping = engine.get_lora_mapping(
+                selected_names=selected_loras,
+                weights=weights,
+                batch_size=1,
+                device=engine.model.device
+            )
+            
+            # Ensure all adapters are active for mixture mode
+            # Swift 模型使用 set_active_adapters 来激活多个适配器
+            if hasattr(engine.model, 'set_active_adapters'):
+                engine.model.set_active_adapters(engine.adapter_names)
+            elif hasattr(engine.model, 'base_model') and hasattr(engine.model.base_model, 'set_active_adapters'):
+                engine.model.base_model.set_active_adapters(engine.adapter_names)
+            
+            # Update template model
             template.model = engine.model
             
-            # Generate response using merged adapter
+            # Generate response using Mixture mode (论文 Section 3.3)
+            # output = Σ(w_i × LoRA_i(x)) - weighted sum of individual LoRA outputs
             if resolved_images:
                 response, _ = inference(
                     engine.model,
@@ -281,7 +298,9 @@ def run_logo_inference(args):
                     system=None,
                     images=resolved_images,
                     max_new_tokens=args.max_new_tokens,
-                    temperature=args.temperature
+                    temperature=args.temperature,
+                    merging_type='mixture',  # Use Mixture mode
+                    lora_mapping=lora_mapping
                 )
             else:
                 # Text-only inference
@@ -292,7 +311,9 @@ def run_logo_inference(args):
                     history=[],
                     system=None,
                     max_new_tokens=args.max_new_tokens,
-                    temperature=args.temperature
+                    temperature=args.temperature,
+                    merging_type='mixture',  # Use Mixture mode
+                    lora_mapping=lora_mapping
                 )
             
             result = {
@@ -312,9 +333,6 @@ def run_logo_inference(args):
                 logger.info(f"  Selected LoRAs: {list(zip(selected_loras, [f'{w:.3f}' for w in weights]))}")
                 logger.info(f"  Response: {response[:200]}...")
             
-            # Reset for next sample
-            engine.reset_merged_adapter()
-            
         except Exception as e:
             logger.error(f"Error processing sample {idx}: {e}")
             import traceback
@@ -333,10 +351,6 @@ def run_logo_inference(args):
         
         results.append(result)
         append_to_jsonl(output_path, result)
-        
-        # Periodically clean up merged adapters to save memory
-        if (idx + 1) % 100 == 0:
-            engine.delete_merged_adapters()
     
     # Summary
     successful = sum(1 for r in results if not r['response'].startswith('ERROR'))
