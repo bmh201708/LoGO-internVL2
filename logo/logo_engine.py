@@ -6,20 +6,29 @@ using Swift's native multi-adapter support.
 
 Based on the paper: "LoRA on the Go: Instance-level Dynamic LoRA Selection and Merging"
 
-NOTE: Swift/PEFT's set_active_adapters/deactivate_adapter are no-ops for PeftModel.
-      We use add_weighted_adapter for merging and PeftModel.set_adapter for activation.
+Key Components:
+1. Signal Extraction: Extract signals from LoRA projection outputs (Section 3.2)
+2. Adapter Selection: Top-K selection based on signal scores
+3. Adapter Merging: Weighted merging using add_weighted_adapter (Section 3.3)
 """
 
 import os
 import json
 import torch
+import torch.nn as nn
 from typing import Dict, List, Optional, Literal, Tuple, Any
 from dataclasses import dataclass
 
 from swift.tuners import Swift
 from swift.utils import get_logger
 
-from .signal_extractor import compute_signal, normalize_weights, select_top_k
+from .signal_extractor import (
+    LOGOSignalExtractor,
+    EmbeddingSignalExtractor,
+    normalize_weights,
+    select_top_k,
+    compute_uniform_signals
+)
 
 logger = get_logger()
 
@@ -30,6 +39,7 @@ class LoRAConfig:
     lora_name: str
     lora_path: str
     description: str = ""
+    embedding_path: Optional[str] = None  # Path to precomputed embedding
 
 
 class LOGOEngine:
@@ -39,35 +49,55 @@ class LOGOEngine:
     Implements dynamic LoRA selection and merging at inference time.
     Uses Swift library's native multi-adapter support.
     
-    Since Swift/PEFT's set_active_adapters has no effect on PeftModel,
-    we use the following approach:
-    1. Load all LoRAs
-    2. For signal extraction: Use embedding similarity or other lightweight methods
-    3. For merging: Use add_weighted_adapter to create merged adapter
+    The workflow (following Algorithm 1 in the paper):
+    1. Load all LoRA adapters
+    2. For each input, extract signals from LoRA projections (probe pass)
+    3. Select top-K adapters based on signal scores
+    4. Merge selected adapters with signal-based weights
+    5. Generate output using merged adapter
     
     Args:
         base_model: The base InternVL2 model
         lora_configs: List of LoRA configurations
-        top_k: Number of top adapters to select (default: 5)
-        signal_type: Signal computation method ('norm' or 'entropy' or 'embedding')
+        top_k: Number of top adapters to select (default: 5, paper uses 20)
+        signal_type: Signal computation method ('norm', 'entropy', 'embedding', 'uniform')
+        target_block_idx: Transformer block for signal extraction (-1 = last block)
+        token_position: Token position for signal computation ('last', 'first', 'mean')
+        combination_type: Merging method ('linear', 'svd', 'cat')
     """
     
     def __init__(
         self,
-        base_model,
+        base_model: nn.Module,
         lora_configs: List[LoRAConfig],
         top_k: int = 5,
-        signal_type: Literal['norm', 'entropy', 'embedding'] = 'embedding'
+        signal_type: Literal['norm', 'entropy', 'embedding', 'uniform'] = 'norm',
+        target_block_idx: int = -1,
+        token_position: Literal['last', 'first', 'mean'] = 'last',
+        combination_type: str = 'linear',
+        use_baseline_calibration: bool = True
     ):
         self.model = base_model
         self.lora_configs = lora_configs
         self.top_k = min(top_k, len(lora_configs))
         self.signal_type = signal_type
+        self.target_block_idx = target_block_idx
+        self.token_position = token_position
+        self.combination_type = combination_type
+        self.use_baseline_calibration = use_baseline_calibration
         
         self.adapter_names: List[str] = []
         self.adapter_embeddings: Dict[str, torch.Tensor] = {}
         self.is_loaded = False
         self.merge_count = 0  # For unique merged adapter names
+        self.current_merged_adapter: Optional[str] = None
+        
+        # Signal extractors (initialized after loading adapters)
+        self._signal_extractor: Optional[LOGOSignalExtractor] = None
+        self._embedding_extractor: Optional[EmbeddingSignalExtractor] = None
+        
+        # Tokenizer for baseline computation
+        self._tokenizer = None
         
     def load_all_loras(self) -> None:
         """
@@ -92,12 +122,13 @@ class LOGOEngine:
                 self.adapter_names.append(cfg.lora_name)
                 
                 # Load precomputed embedding if available
-                embedding_path = getattr(cfg, 'embedding_path', None)
+                embedding_path = cfg.embedding_path
                 if embedding_path and os.path.exists(embedding_path):
                     import numpy as np
                     self.adapter_embeddings[cfg.lora_name] = torch.from_numpy(
                         np.load(embedding_path)
                     ).float()
+                    logger.info(f"  Loaded embedding for {cfg.lora_name}")
                     
             except Exception as e:
                 logger.error(f"Failed to load {cfg.lora_name}: {e}")
@@ -106,58 +137,124 @@ class LOGOEngine:
         self.is_loaded = True
         logger.info(f"Successfully loaded {len(self.adapter_names)} LoRA adapters")
         
-    def compute_embedding_similarity(
-        self,
-        query_embedding: torch.Tensor
-    ) -> Dict[str, float]:
+        # Initialize signal extractors
+        self._init_signal_extractors()
+    
+    def _init_signal_extractors(self) -> None:
+        """Initialize signal extractors after loading adapters."""
+        if not self.adapter_names:
+            return
+        
+        # Initialize LoRA-based signal extractor
+        if self.signal_type in ['norm', 'entropy']:
+            self._signal_extractor = LOGOSignalExtractor(
+                model=self.model,
+                adapter_names=self.adapter_names,
+                signal_type=self.signal_type,
+                target_block_idx=self.target_block_idx,
+                token_position=self.token_position,
+                use_baseline_calibration=self.use_baseline_calibration
+            )
+            logger.info(f"Initialized LOGOSignalExtractor with signal_type={self.signal_type}, calibration={self.use_baseline_calibration}")
+        
+        # Initialize embedding-based extractor if embeddings available
+        if self.adapter_embeddings:
+            self._embedding_extractor = EmbeddingSignalExtractor(self.adapter_embeddings)
+            logger.info(f"Initialized EmbeddingSignalExtractor with {len(self.adapter_embeddings)} embeddings")
+    
+    def compute_baseline(self, tokenizer=None) -> Dict[str, float]:
         """
-        Compute similarity between query embedding and adapter embeddings.
-        This is a lightweight alternative to forward-pass signal extraction.
+        Compute baseline signals for calibration.
+        
+        Should be called after load_all_loras() and before extract_signals().
         
         Args:
-            query_embedding: Embedding of the input query
+            tokenizer: Tokenizer for encoding baseline queries
             
         Returns:
-            Dict mapping adapter names to similarity scores
+            Dict of baseline signals
         """
-        signals = {}
-        query_embedding = query_embedding.float()
+        if self._signal_extractor is None:
+            logger.warning("Signal extractor not initialized. Call load_all_loras() first.")
+            return {}
         
-        for name, adapter_emb in self.adapter_embeddings.items():
-            # Cosine similarity
-            adapter_emb = adapter_emb.to(query_embedding.device)
-            similarity = torch.nn.functional.cosine_similarity(
-                query_embedding.unsqueeze(0),
-                adapter_emb.unsqueeze(0)
-            ).item()
-            signals[name] = max(0, similarity)  # Ensure non-negative
-            
-        # For adapters without embeddings, assign average score
-        if signals:
-            avg_score = sum(signals.values()) / len(signals)
-        else:
-            avg_score = 1.0
-            
-        for name in self.adapter_names:
-            if name not in signals:
-                signals[name] = avg_score
-                
-        return signals
+        if tokenizer is not None:
+            self._tokenizer = tokenizer
+        
+        return self._signal_extractor.compute_baseline(tokenizer=self._tokenizer)
     
-    def compute_uniform_signals(self) -> Dict[str, float]:
+    def set_tokenizer(self, tokenizer) -> None:
+        """Set tokenizer for baseline computation."""
+        self._tokenizer = tokenizer
+    
+    def extract_signals(
+        self,
+        input_ids: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        inputs_embeds: Optional[torch.Tensor] = None,
+        pixel_values: Optional[torch.Tensor] = None,
+        query_embedding: Optional[torch.Tensor] = None,
+        **kwargs
+    ) -> Dict[str, float]:
         """
-        Return uniform signals for all adapters.
-        Used as baseline or when no embedding is available.
+        Extract signals from all adapters.
+        
+        Implements the signal extraction from Section 3.2 of the paper.
+        
+        Args:
+            input_ids: Input token IDs
+            attention_mask: Attention mask  
+            inputs_embeds: Optional input embeddings
+            pixel_values: Optional pixel values for vision models
+            query_embedding: Optional query embedding for embedding-based signal
+            **kwargs: Additional model inputs
+            
+        Returns:
+            Dict mapping adapter names to signal scores
         """
-        return {name: 1.0 for name in self.adapter_names}
+        if not self.adapter_names:
+            logger.warning("No adapters loaded!")
+            return {}
+        
+        # Uniform signals (baseline)
+        if self.signal_type == 'uniform':
+            return compute_uniform_signals(self.adapter_names)
+        
+        # Embedding-based signals
+        if self.signal_type == 'embedding':
+            if query_embedding is not None and self._embedding_extractor:
+                return self._embedding_extractor.extract_signals(query_embedding)
+            else:
+                logger.warning("No query embedding provided or extractor not available. Using uniform signals.")
+                return compute_uniform_signals(self.adapter_names)
+        
+        # LoRA projection-based signals (norm or entropy)
+        if self._signal_extractor is not None:
+            try:
+                signals = self._signal_extractor.extract_signals(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    inputs_embeds=inputs_embeds,
+                    pixel_values=pixel_values,
+                    **kwargs
+                )
+                return signals
+            except Exception as e:
+                logger.error(f"Signal extraction failed: {e}. Using uniform signals.")
+                return compute_uniform_signals(self.adapter_names)
+        
+        # Fallback to uniform signals
+        return compute_uniform_signals(self.adapter_names)
     
     def select_and_merge(
         self,
         signals: Dict[str, float],
-        combination_type: str = 'linear'
+        combination_type: Optional[str] = None
     ) -> Tuple[List[str], List[float]]:
         """
         Select top-K LoRAs and merge them with signal-based weights.
+        
+        Implements Section 3.2 (selection) and Section 3.3 (merging) of the paper.
         
         Args:
             signals: Dict mapping adapter names to signal scores
@@ -166,7 +263,10 @@ class LOGOEngine:
         Returns:
             Tuple of (selected adapter names, their weights)
         """
-        # Select top-K adapters
+        if combination_type is None:
+            combination_type = self.combination_type
+            
+        # Select top-K adapters (Equation 4)
         available_signals = {k: v for k, v in signals.items() if k in self.adapter_names}
         selected_names = select_top_k(available_signals, self.top_k)
         
@@ -177,7 +277,7 @@ class LOGOEngine:
         # Get signals for selected adapters only
         selected_signals = {name: signals[name] for name in selected_names}
         
-        # Normalize to get weights
+        # Normalize to get weights (Equation 5)
         weights_dict = normalize_weights(selected_signals)
         weights = [weights_dict[name] for name in selected_names]
         
@@ -197,12 +297,12 @@ class LOGOEngine:
             )
             
             # Set the merged adapter as active
-            # Note: For PeftModel, we use set_adapter
             if hasattr(self.model, 'set_adapter'):
                 self.model.set_adapter(merged_name)
             elif hasattr(self.model, 'base_model') and hasattr(self.model.base_model, 'set_adapter'):
                 self.model.base_model.set_adapter(merged_name)
                 
+            self.current_merged_adapter = merged_name
             logger.info(f"Created and activated merged adapter: {merged_name}")
             
         except Exception as e:
@@ -213,17 +313,121 @@ class LOGOEngine:
                 logger.info(f"Falling back to single adapter: {top_adapter}")
                 if hasattr(self.model, 'set_adapter'):
                     self.model.set_adapter(top_adapter)
+                self.current_merged_adapter = top_adapter
                     
         return selected_names, weights
     
-    def get_current_model(self):
+    def process_input(
+        self,
+        input_ids: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        inputs_embeds: Optional[torch.Tensor] = None,
+        pixel_values: Optional[torch.Tensor] = None,
+        query_embedding: Optional[torch.Tensor] = None,
+        **kwargs
+    ) -> Tuple[List[str], List[float]]:
+        """
+        Full LOGO pipeline: extract signals, select, and merge.
+        
+        This is the main entry point for processing an input with LOGO.
+        
+        Args:
+            input_ids: Input token IDs
+            attention_mask: Attention mask
+            inputs_embeds: Optional input embeddings
+            pixel_values: Optional pixel values
+            query_embedding: Optional query embedding
+            **kwargs: Additional model inputs
+            
+        Returns:
+            Tuple of (selected adapter names, their weights)
+        """
+        # Step 1: Extract signals
+        signals = self.extract_signals(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            inputs_embeds=inputs_embeds,
+            pixel_values=pixel_values,
+            query_embedding=query_embedding,
+            **kwargs
+        )
+        
+        # Step 2 & 3: Select and merge
+        selected_names, weights = self.select_and_merge(signals)
+        
+        return selected_names, weights
+    
+    def reset_merged_adapter(self) -> None:
+        """
+        Reset to default state after processing an input.
+        
+        This should be called between processing different inputs
+        to ensure clean state.
+        """
+        # Note: We don't delete the merged adapter as it might cause issues
+        # Just track that we need a new merge for the next input
+        self.current_merged_adapter = None
+    
+    def delete_merged_adapters(self) -> None:
+        """
+        Delete all merged adapters to free memory.
+        
+        Call this periodically if memory is a concern.
+        """
+        if hasattr(self.model, 'delete_adapter'):
+            for i in range(1, self.merge_count + 1):
+                adapter_name = f'logo_merged_{i}'
+                try:
+                    self.model.delete_adapter(adapter_name)
+                except:
+                    pass
+        self.merge_count = 0
+        self.current_merged_adapter = None
+    
+    def get_current_model(self) -> nn.Module:
         """Get the current model (with merged/selected adapters active)."""
         return self.model
+    
+    def get_adapter_info(self) -> Dict[str, Any]:
+        """Get information about loaded adapters."""
+        info = {
+            'loaded_adapters': self.adapter_names,
+            'num_adapters': len(self.adapter_names),
+            'top_k': self.top_k,
+            'signal_type': self.signal_type,
+            'target_block_idx': self.target_block_idx,
+            'token_position': self.token_position,
+            'combination_type': self.combination_type,
+            'use_baseline_calibration': self.use_baseline_calibration,
+            'has_embeddings': list(self.adapter_embeddings.keys()),
+            'current_merged_adapter': self.current_merged_adapter,
+            'merge_count': self.merge_count
+        }
+        
+        # Add baseline info if available
+        if self._signal_extractor is not None:
+            baseline = self._signal_extractor.get_baseline_signals()
+            info['baseline_computed'] = baseline is not None
+            if baseline:
+                info['baseline_signals'] = baseline
+        
+        return info
 
 
 def load_lora_configs(config_paths: List[str]) -> List[LoRAConfig]:
     """
     Load LoRA configurations from JSON files.
+    
+    Expected JSON format:
+    [
+        {
+            "lora_name": "adapter_name",
+            "lora_path": "/path/to/lora",
+            "description": "optional description",
+            "embedding_path": "/path/to/embedding.npy"  // optional
+        },
+        ...
+    ]
     
     Args:
         config_paths: List of paths to config JSON files
@@ -245,12 +449,45 @@ def load_lora_configs(config_paths: List[str]) -> List[LoRAConfig]:
             cfg = LoRAConfig(
                 lora_name=item['lora_name'],
                 lora_path=item['lora_path'],
-                description=item.get('description', '')
+                description=item.get('description', ''),
+                embedding_path=item.get('embedding_path', None)
             )
-            # Store embedding path as attribute
-            if 'embedding_path' in item:
-                cfg.embedding_path = item['embedding_path']
             configs.append(cfg)
             
     logger.info(f"Loaded {len(configs)} LoRA configs from {len(config_paths)} files")
     return configs
+
+
+def create_logo_engine(
+    model: nn.Module,
+    config_paths: List[str],
+    top_k: int = 5,
+    signal_type: str = 'norm',
+    **kwargs
+) -> LOGOEngine:
+    """
+    Convenience function to create and initialize a LOGOEngine.
+    
+    Args:
+        model: Base model
+        config_paths: Paths to LoRA config JSON files
+        top_k: Number of adapters to select
+        signal_type: Signal computation method
+        **kwargs: Additional arguments for LOGOEngine
+        
+    Returns:
+        Initialized LOGOEngine with all adapters loaded
+    """
+    lora_configs = load_lora_configs(config_paths)
+    
+    engine = LOGOEngine(
+        base_model=model,
+        lora_configs=lora_configs,
+        top_k=top_k,
+        signal_type=signal_type,
+        **kwargs
+    )
+    
+    engine.load_all_loras()
+    
+    return engine
