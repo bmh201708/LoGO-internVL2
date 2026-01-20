@@ -33,6 +33,42 @@ logger = get_logger()
 dispatchers = []
 
 
+# ==================== LOGO Mixture Mode Context ====================
+# 全局上下文用于传递 Mixture 模式参数到 LoRA 层
+# 这是实现论文 "LoRA on the Go" Section 3.3 的关键部分
+class LOGOMixtureContext:
+    """
+    Thread-local context for LOGO Mixture mode.
+    
+    论文中的 Mixture 模式：output = Σ(wᵢ × LoRAᵢ(x))
+    每个 LoRA 单独计算输出，然后加权求和（输出级别），而不是先合并参数再计算。
+    """
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.reset()
+        return cls._instance
+    
+    def reset(self):
+        self.merging_type = None  # 'mixture' or None
+        self.lora_mapping = None  # (batch_size, num_adapters) tensor
+        self.adapter_names = None  # List of adapter names in order
+    
+    def set(self, merging_type, lora_mapping, adapter_names):
+        self.merging_type = merging_type
+        self.lora_mapping = lora_mapping
+        self.adapter_names = adapter_names
+    
+    def is_mixture_mode(self):
+        return self.merging_type == 'mixture' and self.lora_mapping is not None
+
+
+# 全局实例
+logo_mixture_context = LOGOMixtureContext()
+
+
 def is_auto_awq_available():
     return importlib.util.find_spec('awq') is not None
 
@@ -544,6 +580,91 @@ class Linear(LoRAActivationMixin, _Linear):
         super(Linear, self).__init__(module_key)
         self.set_activation(args[1], True)
         super(ActivationMixin, self).__init__(*args, **kwargs)
+    
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+        """
+        Forward pass with LOGO Mixture mode support.
+        
+        论文 "LoRA on the Go" Section 3.3:
+        - Mixture 模式: output = Σ(wᵢ × LoRAᵢ(x)) - 输出级别加权求和
+        - 每个 LoRA 单独计算，然后加权混合
+        """
+        # 检查是否启用 Mixture 模式
+        ctx = logo_mixture_context
+        if ctx.is_mixture_mode() and ctx.adapter_names is not None:
+            return self._mixture_forward(x, ctx, *args, **kwargs)
+        
+        # 标准 forward（调用父类）
+        return super().forward(x, *args, **kwargs)
+    
+    def _mixture_forward(self, x: torch.Tensor, ctx, *args, **kwargs) -> torch.Tensor:
+        """
+        Mixture mode forward: 每个 LoRA 单独计算，然后加权求和。
+        
+        这是论文的核心实现：output = Σ(wᵢ × LoRAᵢ(x))
+        """
+        # 先计算 base layer 输出
+        result = self.base_layer(x, *args, **kwargs)
+        
+        if self.disable_adapters or self.merged:
+            return result
+        
+        torch_result_dtype = result.dtype
+        lora_mapping = ctx.lora_mapping  # (batch_size, num_adapters)
+        adapter_names = ctx.adapter_names
+        
+        # 收集所有活跃 LoRA 的输出
+        lora_outputs = []
+        valid_adapter_indices = []
+        
+        for idx, adapter_name in enumerate(adapter_names):
+            if adapter_name not in self.lora_A.keys():
+                continue
+            if not self.is_activated(adapter_name):
+                continue
+                
+            lora_A = self.lora_A[adapter_name]
+            lora_B = self.lora_B[adapter_name]
+            dropout = self.lora_dropout[adapter_name]
+            scaling = self.scaling[adapter_name]
+            
+            # 转换输入 dtype
+            x_casted = x
+            if hasattr(self, '_cast_input_dtype'):
+                x_casted = self._cast_input_dtype(x, lora_A.weight.dtype)
+            elif x.dtype != lora_A.weight.dtype:
+                x_casted = x.to(lora_A.weight.dtype)
+            
+            # 计算单个 LoRA 的输出: lora_B(lora_A(dropout(x))) * scaling
+            lora_output = lora_B(lora_A(dropout(x_casted))) * scaling
+            lora_outputs.append(lora_output)
+            valid_adapter_indices.append(idx)
+        
+        if not lora_outputs:
+            return result
+        
+        # Mixture: 加权求和
+        # lora_mapping: (batch, num_adapters)
+        # lora_outputs: list of (batch, seq_len, hidden_dim)
+        batch_size = x.shape[0]
+        
+        # 提取对应的权重
+        weights = []
+        for idx in valid_adapter_indices:
+            if idx < lora_mapping.shape[1]:
+                # (batch,) -> (batch, 1, 1) for broadcasting
+                w = lora_mapping[:batch_size, idx].view(batch_size, 1, 1)
+                weights.append(w)
+            else:
+                weights.append(torch.zeros(batch_size, 1, 1, device=x.device))
+        
+        # 加权求和: Σ(wᵢ × LoRAᵢ(x))
+        weighted_sum = torch.zeros_like(lora_outputs[0])
+        for w, lora_out in zip(weights, lora_outputs):
+            weighted_sum = weighted_sum + w * lora_out
+        
+        result = result + weighted_sum.to(torch_result_dtype)
+        return result
 
 
 class Conv2d(LoRAActivationMixin, _Conv2d):

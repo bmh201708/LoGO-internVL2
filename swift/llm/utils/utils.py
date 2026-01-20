@@ -814,6 +814,7 @@ def inference(model: PreTrainedModel,
               output_prefix: str = '[OUTPUT]',
               merging_type: Optional[str] = None,
               lora_mapping: Optional['torch.Tensor'] = None,
+              mixture_adapter_names: Optional[List[str]] = None,  # LOGO Mixture 模式专用
               **kwargs) -> Union[Tuple[str, History], Dict[str, Any]]:
     """
     generation_config: Priority: generation_config > model.generation_config.
@@ -881,14 +882,31 @@ def inference(model: PreTrainedModel,
             model.generation_config.max_length = generation_config.max_length
             model.generation_config.max_new_tokens = generation_config.max_new_tokens
     
-    # Add LOGO mixture mode parameters if provided
+    # LOGO Mixture Mode: 设置全局上下文而不是传递给 generate
+    # 这样 LoRA 层可以在 forward 时读取上下文
     generate_kwargs = dict(inputs)
-    if merging_type is not None:
-        generate_kwargs['merging_type'] = merging_type
-    if lora_mapping is not None:
-        generate_kwargs['lora_mapping'] = lora_mapping
     
-    generate_ids = model.generate(streamer=streamer, generation_config=generation_config, **generate_kwargs)
+    if merging_type == 'mixture' and lora_mapping is not None:
+        # 导入上下文（延迟导入避免循环依赖）
+        from swift.tuners.lora_layers import logo_mixture_context
+        # 设置上下文 - mixture_adapter_names 需要从外部传入或从模型获取
+        _mixture_adapters = mixture_adapter_names
+        if _mixture_adapters is None:
+            # 尝试从模型获取活跃的适配器名称
+            if hasattr(model, 'active_adapters'):
+                _mixture_adapters = list(model.active_adapters) if isinstance(model.active_adapters, (set, list)) else [model.active_adapters]
+            elif hasattr(model, 'peft_config'):
+                _mixture_adapters = list(model.peft_config.keys())
+        logo_mixture_context.set(merging_type, lora_mapping, _mixture_adapters)
+        logger.info(f"LOGO Mixture mode enabled: adapters={_mixture_adapters}, weights shape={lora_mapping.shape}")
+    
+    try:
+        generate_ids = model.generate(streamer=streamer, generation_config=generation_config, **generate_kwargs)
+    finally:
+        # 无论成功与否，都重置上下文
+        if merging_type == 'mixture':
+            from swift.tuners.lora_layers import logo_mixture_context
+            logo_mixture_context.reset()
     if return_dict:
         res = dict(generate_ids)
         generate_ids = generate_ids['sequences']

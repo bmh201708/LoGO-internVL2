@@ -160,10 +160,11 @@ def test_logo_inference():
                 max_new_tokens=100,
                 temperature=0.0,
                 merging_type='mixture' if lora_mapping is not None else None,
-                lora_mapping=lora_mapping
+                lora_mapping=lora_mapping,
+                mixture_adapter_names=loaded_adapters  # LOGO Mixture 专用：adapter 顺序与 lora_mapping 对应
             )
             print(f"   Response: {response[:200]}...")
-            print("   [OK] Inference works with Mixture mode!")
+            print("   [OK] Inference works with Mixture mode (output-level weighted sum)!")
         else:
             print("   [SKIP] No valid images")
             
