@@ -5,17 +5,20 @@
 # Based on: "LoRA on the Go: Instance-level Dynamic LoRA Selection and Merging"
 # 
 # Usage: 
-#   bash logo/run_logo.sh [GPU_ID] [TEST_DATA] [TOP_K] [SIGNAL_TYPE] [MERGE_METHOD] [OUTPUT_DIR]
+#   bash logo/run_logo.sh [GPU_ID] [TEST_DATA] [TOP_K] [SIGNAL_TYPE] [MERGE_METHOD] [NO_BASELINE] [LORA_TYPE] [DEBUG_SIGNALS] [OUTPUT_DIR]
 #   
 # Examples:
-#   # Default: use norm signal, top-3, mixture mode
+#   # Default: use norm signal, top-3, mixture mode, no baseline calibration
 #   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 norm mixture
 #   
-#   # Use add_weighted_adapter (parameter-level merging)
-#   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 norm add_weighted_adapter
+#   # Only use app LoRAs (exclude category LoRAs)
+#   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 norm mixture true app
 #   
-#   # Use entropy signal with mixture mode
-#   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 entropy mixture
+#   # Only use category LoRAs (exclude app LoRAs)
+#   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 norm mixture true category
+#   
+#   # Debug mode: print all raw signals
+#   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 norm mixture true all true
 #   
 #   # Use uniform weights (baseline)
 #   bash logo/run_logo.sh 5 data/Val_100.jsonl 3 uniform mixture
@@ -43,9 +46,11 @@ TEST_DATA="${2:-data/Val_100.jsonl}"
 TOP_K="${3:-3}"
 SIGNAL_TYPE="${4:-norm}"
 MERGE_METHOD="${5:-mixture}"  # mixture (output-level) or add_weighted_adapter (parameter-level)
-NO_BASELINE="${6:-false}"     # true to disable baseline calibration
-OUTPUT_DIR="${7:-output/logo_results}"
-COMBINATION_TYPE="${8:-linear}"  # for add_weighted_adapter: linear, svd, cat
+NO_BASELINE="${6:-true}"     # true to disable baseline calibration
+LORA_TYPE="${7:-all}"        # all, app, or category - which LoRA types to load
+DEBUG_SIGNALS="${8:-false}"  # true to print all raw signals for debugging
+OUTPUT_DIR="${9:-output/logo_results}"
+COMBINATION_TYPE="${10:-linear}"  # for add_weighted_adapter: linear, svd, cat
 
 # Validate merge method
 if [ "$MERGE_METHOD" != "mixture" ] && [ "$MERGE_METHOD" != "add_weighted_adapter" ]; then
@@ -63,6 +68,8 @@ echo "Top-K:            $TOP_K"
 echo "Signal Type:      $SIGNAL_TYPE"
 echo "Merge Method:     $MERGE_METHOD"
 echo "No Baseline:      $NO_BASELINE"
+echo "LoRA Type:        $LORA_TYPE"
+echo "Debug Signals:    $DEBUG_SIGNALS"
 if [ "$MERGE_METHOD" == "add_weighted_adapter" ]; then
 echo "Combination Type: $COMBINATION_TYPE"
 fi
@@ -95,6 +102,7 @@ CMD="python logo/infer_logo.py \
     --signal_type $SIGNAL_TYPE \
     --merge_method $MERGE_METHOD \
     --combination_type $COMBINATION_TYPE \
+    --lora_type $LORA_TYPE \
     --output_dir $OUTPUT_DIR \
     --target_block_idx -1 \
     --token_position last"
@@ -104,10 +112,15 @@ if [ "$NO_BASELINE" == "true" ]; then
     CMD="$CMD --no_baseline_calibration"
 fi
 
+# Add debug_signals flag if requested
+if [ "$DEBUG_SIGNALS" == "true" ]; then
+    CMD="$CMD --debug_signals"
+fi
+
 eval $CMD
 
-# Find the latest result file and run evaluation
-result_file=$(find "$OUTPUT_DIR" -name "logo_results_*.jsonl" 2>/dev/null | sort -r | head -n 1)
+# Find the latest result file and run evaluation (by modification time, not alphabetically)
+result_file=$(ls -t "$OUTPUT_DIR"/logo_results_*.jsonl 2>/dev/null | head -n 1)
 
 if [ -n "$result_file" ]; then
     echo ""

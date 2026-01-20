@@ -581,6 +581,10 @@ class Linear(LoRAActivationMixin, _Linear):
         self.set_activation(args[1], True)
         super(ActivationMixin, self).__init__(*args, **kwargs)
     
+    # 调试计数器
+    _debug_mixture_call_count = 0
+    _debug_normal_call_count = 0
+    
     def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         """
         Forward pass with LOGO Mixture mode support.
@@ -592,8 +596,16 @@ class Linear(LoRAActivationMixin, _Linear):
         # 检查是否启用 Mixture 模式
         ctx = logo_mixture_context
         if ctx.is_mixture_mode() and ctx.adapter_names is not None:
+            Linear._debug_mixture_call_count += 1
+            if Linear._debug_mixture_call_count <= 3:
+                logger.info(f"[DEBUG] _mixture_forward called! count={Linear._debug_mixture_call_count}, "
+                           f"adapters={ctx.adapter_names}, weights={ctx.lora_mapping}")
             return self._mixture_forward(x, ctx, *args, **kwargs)
         
+        Linear._debug_normal_call_count += 1
+        if Linear._debug_normal_call_count <= 3:
+            logger.info(f"[DEBUG] Normal forward called! count={Linear._debug_normal_call_count}, "
+                       f"is_mixture={ctx.is_mixture_mode()}, adapters={ctx.adapter_names}")
         # 标准 forward（调用父类）
         return super().forward(x, *args, **kwargs)
     

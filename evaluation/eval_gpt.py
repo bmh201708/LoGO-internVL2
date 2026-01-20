@@ -1,14 +1,9 @@
-print('0')
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-print('1`')
 import os
 import json
-print('1')
 # from transformers import AutoTokenizer, AutoModel
 # import torch
-print('2')
-from sklearn.metrics.pairwise import cosine_similarity
 import nltk
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from rouge_score import rouge_scorer

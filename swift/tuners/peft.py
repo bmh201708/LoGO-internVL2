@@ -296,6 +296,100 @@ def keep_device_forward(self, *args, **kwargs):
 
 def hot_patch_peft_module():
     from peft.tuners.lora import LoraLayer
+    from peft.tuners.lora import Linear as PeftLinear
+    
+    # ==================== LOGO Mixture Mode Patch ====================
+    # Patch PEFT Linear's forward to support mixture mode
+    # 保存原始 forward 方法
+    if not hasattr(PeftLinear, '_forward_origin'):
+        PeftLinear._forward_origin = PeftLinear.forward
+    
+    def _mixture_aware_forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+        """
+        LOGO Mixture-aware forward for PEFT Linear.
+        
+        如果启用了 mixture 模式，使用加权 LoRA 输出；
+        否则使用原始 forward。
+        """
+        # 延迟导入以避免循环依赖
+        from swift.tuners.lora_layers import logo_mixture_context
+        ctx = logo_mixture_context
+        if ctx.is_mixture_mode() and ctx.adapter_names is not None:
+            return _peft_mixture_forward(self, x, ctx, *args, **kwargs)
+        return self._forward_origin(x, *args, **kwargs)
+    
+    def _peft_mixture_forward(self, x: torch.Tensor, ctx, *args, **kwargs) -> torch.Tensor:
+        """
+        Mixture mode forward for PEFT Linear: 每个 LoRA 单独计算，然后加权求和。
+        
+        output = base(x) + Σ(wᵢ × LoRAᵢ(x))
+        """
+        # 先计算 base layer 输出
+        result = self.base_layer(x, *args, **kwargs)
+        
+        if self.disable_adapters or self.merged:
+            return result
+        
+        torch_result_dtype = result.dtype
+        lora_mapping = ctx.lora_mapping  # (batch_size, num_adapters)
+        adapter_names = ctx.adapter_names
+        batch_size = x.shape[0]
+        
+        # 收集所有存在于该层的 LoRA 输出
+        lora_outputs = []
+        valid_adapter_indices = []
+        
+        for idx, adapter_name in enumerate(adapter_names):
+            # 只检查该层是否有这个 LoRA
+            if adapter_name not in self.lora_A.keys():
+                continue
+            
+            # 检查权重是否为正（优化：跳过权重为0的adapter）
+            if idx < lora_mapping.shape[1]:
+                weight_val = lora_mapping[0, idx].item() if batch_size == 1 else lora_mapping[:, idx].max().item()
+                if weight_val <= 0:
+                    continue
+            else:
+                continue
+                
+            lora_A = self.lora_A[adapter_name]
+            lora_B = self.lora_B[adapter_name]
+            dropout = self.lora_dropout[adapter_name]
+            scaling = self.scaling[adapter_name]
+            
+            # 转换输入 dtype
+            x_casted = x
+            if x.dtype != lora_A.weight.dtype:
+                x_casted = x.to(lora_A.weight.dtype)
+            
+            # 计算单个 LoRA 的输出: lora_B(lora_A(dropout(x))) * scaling
+            lora_output = lora_B(lora_A(dropout(x_casted))) * scaling
+            lora_outputs.append(lora_output)
+            valid_adapter_indices.append(idx)
+        
+        if not lora_outputs:
+            return result
+        
+        # Mixture: 加权求和
+        # 提取对应的权重
+        weights = []
+        for idx in valid_adapter_indices:
+            # (batch,) -> (batch, 1, 1) for broadcasting
+            w = lora_mapping[:batch_size, idx].view(batch_size, 1, 1)
+            weights.append(w)
+        
+        # 加权求和: Σ(wᵢ × LoRAᵢ(x))
+        weighted_sum = torch.zeros_like(lora_outputs[0])
+        for w, lora_out in zip(weights, lora_outputs):
+            weighted_sum = weighted_sum + w * lora_out
+        
+        result = result + weighted_sum.to(torch_result_dtype)
+        return result
+    
+    # Apply the patch
+    PeftLinear.forward = _mixture_aware_forward
+    logger.info("[LOGO] Patched PEFT Linear.forward for mixture mode support")
+    # ==================== End LOGO Patch ====================
 
     # Fix Lora does not support NonDynamicallyQuantizableLinear
     LoraModel._create_and_replace_origin = LoraModel._create_and_replace

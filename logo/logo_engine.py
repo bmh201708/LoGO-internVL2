@@ -407,6 +407,7 @@ class LOGOEngine:
         inputs_embeds: Optional[torch.Tensor] = None,
         pixel_values: Optional[torch.Tensor] = None,
         query_embedding: Optional[torch.Tensor] = None,
+        debug_signals: bool = False,
         **kwargs
     ) -> Tuple[List[str], List[float]]:
         """
@@ -420,6 +421,7 @@ class LOGOEngine:
             inputs_embeds: Optional input embeddings
             pixel_values: Optional pixel values
             query_embedding: Optional query embedding
+            debug_signals: If True, print all raw signals for debugging
             **kwargs: Additional model inputs
             
         Returns:
@@ -434,6 +436,16 @@ class LOGOEngine:
             query_embedding=query_embedding,
             **kwargs
         )
+        
+        # Debug: print all raw signals
+        if debug_signals:
+            logger.info("=" * 60)
+            logger.info("DEBUG: All raw signals (sorted by value):")
+            sorted_signals = sorted(signals.items(), key=lambda x: x[1], reverse=True)
+            for name, sig in sorted_signals:
+                prefix = "  [APP]" if name.startswith("app_") else "  [CAT]"
+                logger.info(f"{prefix} {name}: {sig:.6f}")
+            logger.info("=" * 60)
         
         # Step 2 & 3: Select and merge
         selected_names, weights = self.select_and_merge(signals)

@@ -75,6 +75,11 @@ def parse_args():
                         help='LoRA merging method: mixture (output-level, 论文推荐) or add_weighted_adapter (parameter-level)')
     parser.add_argument('--no_baseline_calibration', action='store_true',
                         help='Disable baseline calibration for signal extraction')
+    parser.add_argument('--lora_type', type=str, default='all',
+                        choices=['all', 'app', 'category'],
+                        help='Which LoRA types to load: all, app only, or category only')
+    parser.add_argument('--debug_signals', action='store_true',
+                        help='Print all raw signals for debugging')
     
     # Generation settings
     parser.add_argument('--max_new_tokens', type=int, default=512)
@@ -181,14 +186,17 @@ def run_logo_inference(args):
         test_data = test_data[:num_samples]
         logger.info(f"Debug mode: processing {len(test_data)} samples")
     
-    # Load LoRA configs
+    # Load LoRA configs based on lora_type
     config_paths = []
-    if os.path.exists(args.app_config):
+    if args.lora_type in ['all', 'app'] and os.path.exists(args.app_config):
         config_paths.append(args.app_config)
-    if os.path.exists(args.category_config):
+        logger.info(f"Loading app LoRA configs from: {args.app_config}")
+    if args.lora_type in ['all', 'category'] and os.path.exists(args.category_config):
         config_paths.append(args.category_config)
+        logger.info(f"Loading category LoRA configs from: {args.category_config}")
     
     lora_configs = load_lora_configs(config_paths)
+    logger.info(f"Using lora_type={args.lora_type}, loaded {len(lora_configs)} LoRA configs")
     
     if not lora_configs:
         logger.error("No LoRA configs found!")
@@ -278,7 +286,10 @@ def run_logo_inference(args):
                 signal_inputs['pixel_values'] = inputs['pixel_values'].to(engine.model.device)
             
             # LOGO: Extract signals and select adapters
-            selected_loras, weights = engine.process_input(**signal_inputs)
+            selected_loras, weights = engine.process_input(
+                **signal_inputs, 
+                debug_signals=args.debug_signals
+            )
             
             # Update template model
             template.model = engine.model
