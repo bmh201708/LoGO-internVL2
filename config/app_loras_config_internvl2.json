@@ -1,0 +1,86 @@
+[
+    {
+        "lora_name": "app_lora_adidas",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_adidas/internvl2-2b/v0-20260115-224240/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/adidas/adidas_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Adidas app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_amazon",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_amazon/internvl2-2b/v0-20260115-015322/global_lora_10",
+        "embedding_path": "data/embeddings/lora_app/amazon/amazon_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Amazon app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_calendar",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_calendar/internvl2-2b/v0-20260116-005152/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/calendar/calendar_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Calendar app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_clock",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_clock/internvl2-2b/v0-20260115-182032/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/clock/clock_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Clock app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_decathlon",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_decathlon/internvl2-2b/v0-20260115-234123/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/decathlon/decathlon_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Decathlon app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_ebay",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_ebay/internvl2-2b/v0-20260115-065630/global_lora_10",
+        "embedding_path": "data/embeddings/lora_app/ebay/ebay_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on eBay app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_etsy",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_etsy/internvl2-2b/v0-20260116-001906/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/etsy/etsy_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Etsy app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_flipkart",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_flipkart/internvl2-2b/v0-20260115-104912/global_lora_10",
+        "embedding_path": "data/embeddings/lora_app/flipkart/flipkart_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Flipkart app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_gmail",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_gmail/internvl2-2b/v0-20260115-132623/global_lora_10",
+        "embedding_path": "data/embeddings/lora_app/gmail/gmail_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Gmail app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_google_drive",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_google_drive/internvl2-2b/v0-20260115-221127/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/google_drive/google_drive_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Google Drive app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_google_maps",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_google_maps/internvl2-2b/v0-20260116-021739/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/google_maps/google_maps_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Google Maps app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_kitchen_stories",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_kitchen_stories/internvl2-2b/v0-20260116-025515/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/kitchen_stories/kitchen_stories_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Kitchen Stories app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_reminder",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_reminder/internvl2-2b/v0-20260115-195416/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/reminder/reminder_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on Reminder app tasks (v0_round5)"
+    },
+    {
+        "lora_name": "app_lora_youtube",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/internvl2_lora_app/internvl2_app_lora_youtube/internvl2-2b/v0-20260115-212612/global_lora_5",
+        "embedding_path": "data/embeddings/lora_app/youtube/youtube_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on YouTube app tasks (v0_round5)"
+    }
+]

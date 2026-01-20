@@ -1,0 +1,32 @@
+[
+    {
+        "lora_name": "category_lora_entertainment",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Entertainment_internvl2-2b/internvl2-2b/v3-20260118-135112/global_lora_8",
+        "embedding_path": "data/embeddings/lora_category/entertainment/entertainment_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on entertainment domain tasks (v3_round8)"
+    },
+    {
+        "lora_name": "category_lora_lives",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Lives_internvl2-2b/internvl2-2b/v4-20260119-025233/global_lora_3",
+        "embedding_path": "data/embeddings/lora_category/lives/lives_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on daily lives domain tasks (v4_round3)"
+    },
+    {
+        "lora_name": "category_lora_office",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Office_internvl2-2b/internvl2-2b/v5-20260117-122844/global_lora_2",
+        "embedding_path": "data/embeddings/lora_category/office/office_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on office domain tasks (v5_round2)"
+    },
+    {
+        "lora_name": "category_lora_shopping",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Shopping_internvl2-2b/internvl2-2b/v7-20260115-221304/global_lora_10",
+        "embedding_path": "data/embeddings/lora_category/shopping/shopping_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on shopping domain tasks (v7_round10)"
+    },
+    {
+        "lora_name": "category_lora_traveling",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_internvl2-2b/category_lora_Traveling_internvl2-2b/internvl2-2b/v10-20260116-154538/global_lora_2",
+        "embedding_path": "data/embeddings/lora_category/traveling/traveling_jina_v4_emb.mean.npy",
+        "description": "InternVL2-2B LoRA trained on traveling domain tasks (v10_round2)"
+    }
+]
