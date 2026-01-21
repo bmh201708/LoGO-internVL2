@@ -595,12 +595,22 @@ def load_lora_configs(config_paths: List[str]) -> List[LoRAConfig]:
     configs = []
     
     for path in config_paths:
-        if not os.path.exists(path):
-            logger.warning(f"Config file not found: {path}")
+        # Skip /dev/null or non-existent files
+        if path == '/dev/null' or not os.path.exists(path):
+            if path != '/dev/null':
+                logger.warning(f"Config file not found: {path}")
             continue
-            
-        with open(path, 'r') as f:
-            data = json.load(f)
+        
+        try:
+            with open(path, 'r') as f:
+                content = f.read().strip()
+                if not content:
+                    logger.warning(f"Config file is empty: {path}")
+                    continue
+                data = json.loads(content)
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse config file {path}: {e}")
+            continue
             
         for item in data:
             cfg = LoRAConfig(

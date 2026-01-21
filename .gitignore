@@ -1,4 +1,5 @@
 data/*
+output/**/*.jsonl
 
 # Byte-compiled / optimized / DLL files
 *.pyc

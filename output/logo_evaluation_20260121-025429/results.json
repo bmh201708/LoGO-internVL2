@@ -1,0 +1,115 @@
+{
+  "config": {
+    "gpu": 6,
+    "top_k": 3,
+    "signal_type": "norm",
+    "timestamp": "20260121-025429"
+  },
+  "app_results": {
+    "adidas": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/adidas_results.jsonl"
+    },
+    "amazon": {
+      "step_accuracy": 73.33,
+      "episode_accuracy": 73.33,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/amazon_results.jsonl"
+    },
+    "calendar": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/calendar_results.jsonl"
+    },
+    "clock": {
+      "step_accuracy": 93.33,
+      "episode_accuracy": 93.33,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/clock_results.jsonl"
+    },
+    "decathlon": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/decathlon_results.jsonl"
+    },
+    "ebay": {
+      "step_accuracy": 66.67,
+      "episode_accuracy": 66.67,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/ebay_results.jsonl"
+    },
+    "etsy": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/etsy_results.jsonl"
+    },
+    "flipkart": {
+      "step_accuracy": 66.67,
+      "episode_accuracy": 66.67,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/flipkart_results.jsonl"
+    },
+    "gmail": {
+      "step_accuracy": 100.0,
+      "episode_accuracy": 100.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/gmail_results.jsonl"
+    },
+    "google_drive": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/google_drive_results.jsonl"
+    },
+    "google_maps": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/google_maps_results.jsonl"
+    },
+    "kitchen_stories": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/kitchen_stories_results.jsonl"
+    },
+    "reminder": {
+      "step_accuracy": 73.33,
+      "episode_accuracy": 71.43,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/reminder_results.jsonl"
+    },
+    "youtube": {
+      "step_accuracy": 0.0,
+      "episode_accuracy": 0.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/app_results/youtube_results.jsonl"
+    }
+  },
+  "category_results": {
+    "entertainment": {
+      "step_accuracy": 73.33,
+      "episode_accuracy": 69.23,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/category_results/entertainment_results.jsonl"
+    },
+    "lives": {
+      "step_accuracy": 71.43,
+      "episode_accuracy": 62.5,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/category_results/lives_results.jsonl"
+    },
+    "office": {
+      "step_accuracy": 52.63,
+      "episode_accuracy": 60.0,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/category_results/office_results.jsonl"
+    },
+    "shopping": {
+      "step_accuracy": 84.38,
+      "episode_accuracy": 83.87,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/category_results/shopping_results.jsonl"
+    },
+    "traveling": {
+      "step_accuracy": 66.67,
+      "episode_accuracy": 58.33,
+      "result_file": "/data1/hmpiao/jinyike/LoGO-internVL2/output/logo_evaluation_20260121-025429/category_results/traveling_results.jsonl"
+    }
+  },
+  "app_overall": {
+    "step_accuracy": 28.4,
+    "episode_accuracy": 77.78
+  },
+  "category_overall": {
+    "step_accuracy": 71.57,
+    "episode_accuracy": 69.77
+  }
+}
