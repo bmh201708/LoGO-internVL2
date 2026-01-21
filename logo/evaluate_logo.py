@@ -42,8 +42,8 @@ def parse_args():
     parser.add_argument('--merge_method', type=str, default='mixture',
                        choices=['mixture', 'add_weighted_adapter'],
                        help='Merge method: mixture (output-level) or add_weighted_adapter (parameter-level)')
-    parser.add_argument('--no_baseline_calibration', action='store_true', default=True,
-                       help='Disable baseline calibration (default: True)')
+    parser.add_argument('--no_baseline_calibration', action='store_true', default=False,
+                       help='Disable baseline calibration (default: False = calibration enabled)')
     
     # 选择测试类型
     parser.add_argument('--app_only', action='store_true', help='Only test app-level')
