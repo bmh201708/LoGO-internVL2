@@ -83,7 +83,7 @@ def run_inference(
     top_k: int,
     signal_type: str,
     merge_method: str = 'mixture',
-    no_baseline_calibration: bool = True,
+    no_baseline_calibration: bool = False,
     is_category: bool = False,
     debug: bool = False,
     dry_run: bool = False
@@ -119,6 +119,11 @@ def run_inference(
     
     env = os.environ.copy()
     env['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
+    # 限制图片最大像素和数量，防止 OOM
+    # swift 框架会将小写参数名转为大写读取环境变量 (get_env_args)
+    env['MAX_PIXELS'] = '150000'  # 大幅降低以防止 OOM
+    env['MAX_NUM'] = '9'  # 限制每个样本最多 6 张图片
+    env['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
     
     if dry_run:
         print(f"[DRY RUN] CUDA_VISIBLE_DEVICES={gpu_id} {' '.join(cmd)}")

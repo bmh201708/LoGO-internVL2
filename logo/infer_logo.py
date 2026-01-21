@@ -10,6 +10,18 @@ Usage:
 
 import os
 import sys
+
+# 设置环境变量以防止 OOM（必须在导入 swift 之前）
+if 'MAX_PIXELS' not in os.environ:
+    os.environ['MAX_PIXELS'] = '150000'
+if 'MAX_NUM' not in os.environ:
+    os.environ['MAX_NUM'] = '9'
+os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', 'expandable_segments:True')
+
+# 调试输出
+print(f"[DEBUG] MAX_PIXELS = {os.environ.get('MAX_PIXELS', 'NOT SET')}")
+print(f"[DEBUG] MAX_NUM = {os.environ.get('MAX_NUM', 'NOT SET')}")
+print(f"[DEBUG] PYTORCH_CUDA_ALLOC_CONF = {os.environ.get('PYTORCH_CUDA_ALLOC_CONF', 'NOT SET')}")
 import json
 import argparse
 import datetime as dt
