@@ -1725,7 +1725,14 @@ class _Qwen2VLTemplateMixin:
                 video_mask = (input_ids == model.config.video_token_id).unsqueeze(-1).expand_as(inputs_embeds)
                 video_embeds = video_embeds.to(inputs_embeds.device, inputs_embeds.dtype)
                 inputs_embeds = inputs_embeds.masked_scatter(video_mask, video_embeds)
-        return {'inputs_embeds': inputs_embeds[0]}
+        # Return inputs_embeds and additional fields needed for signal extraction
+        result = {'inputs_embeds': inputs_embeds[0]}
+        # Also return image_grid_thw and video_grid_thw for computing position_ids in signal extraction
+        if data.get('image_grid_thw') is not None:
+            result['image_grid_thw'] = data['image_grid_thw']
+        if data.get('video_grid_thw') is not None:
+            result['video_grid_thw'] = data['video_grid_thw']
+        return result
 
     def data_collator(self, batch: List[Dict[str, Any]], padding_to: Optional[int] = None) -> Dict[str, Any]:
         res = super().data_collator(batch, padding_to)

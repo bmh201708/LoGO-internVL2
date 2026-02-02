@@ -1,0 +1,86 @@
+[
+    {
+        "lora_name": "app_lora_adidas_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_adidas/qwen2-vl-7b-instruct/v0-20260131-111220/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Adidas app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_amazon_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_amazon/qwen2-vl-7b-instruct/v0-20260130-190721/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Amazon app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_calendar_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_calendar/qwen2-vl-7b-instruct/v0-20260131-131350/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Calendar app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_clock_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_clock/qwen2-vl-7b-instruct/v0-20260131-052630/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Clock app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_decathlon_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_decathlon/qwen2-vl-7b-instruct/v0-20260131-122711/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Decathlon app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_ebay_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_ebay/qwen2-vl-7b-instruct/v0-20260130-223012/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on eBay app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_etsy_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_etsy/qwen2-vl-7b-instruct/v0-20260131-202612/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Etsy app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_flipkart_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_flipkart/qwen2-vl-7b-instruct/v0-20260131-010305/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Flipkart app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_gmail_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_gmail/qwen2-vl-7b-instruct/v0-20260131-025059/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Gmail app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_google_drive_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_google_drive/qwen2-vl-7b-instruct/v0-20260131-103300/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Google Drive app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_google_maps_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_google_maps/qwen2-vl-7b-instruct/v0-20260131-150323/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Google Maps app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_kitchen_stories_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_kitchen_stories/qwen2-vl-7b-instruct/v0-20260131-155209/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Kitchen Stories app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_reminder_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_reminder/qwen2-vl-7b-instruct/v0-20260131-073315/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Reminder app tasks (v0_round10)"
+    },
+    {
+        "lora_name": "app_lora_youtube_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_youtube/qwen2-vl-7b-instruct/v0-20260131-093519/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on YouTube app tasks (v0_round10)"
+    }
+]

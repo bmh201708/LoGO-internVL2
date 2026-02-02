@@ -1,0 +1,32 @@
+[
+    {
+        "lora_name": "category_lora_entertainment_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_qwen2-vl-7b/category_lora_Entertainment_qwen2-vl-7b/qwen2-vl-7b-instruct/v0-20260131-213955/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Entertainment category tasks (v0_round10)"
+    },
+    {
+        "lora_name": "category_lora_lives_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_qwen2-vl-7b/category_lora_Lives_qwen2-vl-7b/qwen2-vl-7b-instruct/v0-20260201-080741/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Lives category tasks (v0_round10)"
+    },
+    {
+        "lora_name": "category_lora_office_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_qwen2-vl-7b/category_lora_Office_qwen2-vl-7b/qwen2-vl-7b-instruct/v0-20260131-211441/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Office category tasks (v0_round10)"
+    },
+    {
+        "lora_name": "category_lora_shopping_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_qwen2-vl-7b/category_lora_Shopping_qwen2-vl-7b/qwen2-vl-7b-instruct/v0-20260201-062221/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Shopping category tasks (v0_round10)"
+    },
+    {
+        "lora_name": "category_lora_traveling_qwen2vl",
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/lora_category_qwen2-vl-7b/category_lora_Traveling_qwen2-vl-7b/qwen2-vl-7b-instruct/v0-20260131-211143/global_lora_10",
+        "embedding_path": "",
+        "description": "Qwen2-VL-7B LoRA trained on Traveling category tasks (v0_round10)"
+    }
+]

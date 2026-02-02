@@ -46,27 +46,44 @@ from logo.logo_engine import LOGOEngine, load_lora_configs, create_logo_engine
 logger = get_logger()
 
 
+# Model path defaults
+MODEL_PATHS = {
+    'internvl2-2b': '/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B',
+    'qwen2-vl-7b-instruct': '/home/hmpiao/hmpiao/Qwen2-VL-7B-Instruct',
+}
+
+# Config file paths by model type
+CONFIG_PATHS = {
+    'internvl2-2b': {
+        'app': 'config/app_loras_config_internvl2.json',
+        'category': 'config/category_loras_config_internvl2.json',
+    },
+    'qwen2-vl-7b-instruct': {
+        'app': 'config/app_loras_config_qwen2vl.json',
+        'category': 'config/category_loras_config_qwen2vl.json',
+    },
+}
+
+
 def parse_args():
-    parser = argparse.ArgumentParser(description='LOGO Inference for InternVL2')
+    parser = argparse.ArgumentParser(description='LOGO Inference for VLM (InternVL2 / Qwen2-VL)')
+    
+    # Model settings (first, as other defaults depend on it)
+    parser.add_argument('--model_type', type=str, default='internvl2-2b',
+                        choices=['internvl2-2b', 'qwen2-vl-7b-instruct'],
+                        help='Model type: internvl2-2b or qwen2-vl-7b-instruct')
+    parser.add_argument('--model_path', type=str, default=None,
+                        help='Path to base model (auto-detected if not specified)')
     
     # Data paths
     parser.add_argument('--test_data', type=str, default='data/Val_100.jsonl',
                         help='Path to test dataset (JSONL format)')
-    parser.add_argument('--app_config', type=str, 
-                        default='config/app_loras_config_internvl2.json',
-                        help='Path to app-level LoRA config')
-    parser.add_argument('--category_config', type=str,
-                        default='config/category_loras_config_internvl2.json',
-                        help='Path to category-level LoRA config')
+    parser.add_argument('--app_config', type=str, default=None,
+                        help='Path to app-level LoRA config (auto-detected if not specified)')
+    parser.add_argument('--category_config', type=str, default=None,
+                        help='Path to category-level LoRA config (auto-detected if not specified)')
     parser.add_argument('--output_dir', type=str, default='output/logo_results',
                         help='Output directory for results')
-    
-    # Model settings
-    parser.add_argument('--model_type', type=str, default='internvl2-2b',
-                        help='Model type')
-    parser.add_argument('--model_path', type=str,
-                        default='/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B',
-                        help='Path to base model')
     
     # LOGO settings
     parser.add_argument('--top_k', type=int, default=5,
@@ -145,8 +162,18 @@ def prepare_query(query: str, num_images: int) -> str:
     return '\n'.join(['<image>'] * num_images + non_image_lines)
 
 
+def get_template_type(model_type: str) -> str:
+    """Get template type based on model type."""
+    if 'qwen2-vl' in model_type:
+        return 'qwen2-vl'
+    elif 'internvl' in model_type:
+        return 'internvl2'
+    else:
+        raise ValueError(f"Unknown model type: {model_type}")
+
+
 def prepare_model(args) -> tuple:
-    """Load and prepare the base InternVL2 model."""
+    """Load and prepare the base model (InternVL2 or Qwen2-VL)."""
     logger.info(f"Loading base model: {args.model_type}")
     
     model_kwargs = {
@@ -161,9 +188,12 @@ def prepare_model(args) -> tuple:
         model_id_or_path=args.model_path
     )
     
-    # Get template
+    # Get template based on model type
+    template_type = get_template_type(args.model_type)
+    logger.info(f"Using template type: {template_type}")
+    
     template = get_template(
-        'internvl2',
+        template_type,
         tokenizer,
         None,  # system prompt
         2048,  # max_length
@@ -178,13 +208,31 @@ def run_logo_inference(args):
     """Main LOGO inference function."""
     seed_everything(args.seed)
     
+    # Set default model path if not specified
+    if args.model_path is None:
+        args.model_path = MODEL_PATHS.get(args.model_type)
+        if args.model_path is None:
+            raise ValueError(f"Unknown model type: {args.model_type}. Available: {list(MODEL_PATHS.keys())}")
+        logger.info(f"Using default model path for {args.model_type}: {args.model_path}")
+    
+    # Set default config paths if not specified
+    config = CONFIG_PATHS.get(args.model_type, CONFIG_PATHS['internvl2-2b'])
+    if args.app_config is None:
+        args.app_config = config['app']
+        logger.info(f"Using default app config: {args.app_config}")
+    if args.category_config is None:
+        args.category_config = config['category']
+        logger.info(f"Using default category config: {args.category_config}")
+    
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
     time_str = dt.datetime.now().strftime('%Y%m%d-%H%M%S')
     merge_suffix = 'mix' if args.merge_method == 'mixture' else 'awa'  # awa = add_weighted_adapter
+    # Include model type in output filename for clarity
+    model_suffix = 'qwen2vl' if 'qwen2' in args.model_type else 'internvl2'
     output_path = os.path.join(
         args.output_dir, 
-        f'logo_results_{args.signal_type}_k{args.top_k}_{merge_suffix}_{time_str}.jsonl'
+        f'logo_results_{model_suffix}_{args.signal_type}_k{args.top_k}_{merge_suffix}_{time_str}.jsonl'
     )
     
     # Load test data
@@ -296,6 +344,9 @@ def run_logo_inference(args):
                 signal_inputs['inputs_embeds'] = inputs['inputs_embeds'].unsqueeze(0).to(engine.model.device)
             if 'pixel_values' in inputs:
                 signal_inputs['pixel_values'] = inputs['pixel_values'].to(engine.model.device)
+            # Qwen2-VL 需要 image_grid_thw 参数
+            if 'image_grid_thw' in inputs:
+                signal_inputs['image_grid_thw'] = inputs['image_grid_thw'].to(engine.model.device)
             
             # LOGO: Extract signals and select adapters
             selected_loras, weights = engine.process_input(

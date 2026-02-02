@@ -29,9 +29,28 @@ from typing import Dict, List, Tuple, Optional
 # 项目路径
 PROJECT_ROOT = Path(__file__).parent.parent
 
+# 模型配置
+MODEL_CONFIGS = {
+    'internvl2-2b': {
+        'model_path': '/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B',
+        'app_config': 'config/app_loras_config_internvl2.json',
+        'category_config': 'config/category_loras_config_internvl2.json',
+    },
+    'qwen2-vl-7b-instruct': {
+        'model_path': '/home/hmpiao/hmpiao/Qwen2-VL-7B-Instruct',
+        'app_config': 'config/app_loras_config_qwen2vl.json',
+        'category_config': 'config/category_loras_config_qwen2vl.json',
+    },
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='LOGO Evaluation Script')
+    
+    # 模型配置
+    parser.add_argument('--model_type', type=str, default='internvl2-2b',
+                       choices=['internvl2-2b', 'qwen2-vl-7b-instruct'],
+                       help='Model type: internvl2-2b or qwen2-vl-7b-instruct')
     
     # 基本配置
     parser.add_argument('--gpu', type=int, default=5, help='GPU ID')
@@ -48,10 +67,11 @@ def parse_args():
     # 选择测试类型
     parser.add_argument('--app_only', action='store_true', help='Only test app-level')
     parser.add_argument('--category_only', action='store_true', help='Only test category-level')
+    parser.add_argument('--val100', action='store_true', help='Only evaluate on Val_100.jsonl (quick test)')
     
     # 输出配置
     parser.add_argument('--output_dir', type=str, default=None,
-                       help='Output directory (default: output/logo_evaluation_TIMESTAMP)')
+                       help='Output directory (default: output/logo_evaluation_MODEL_TIMESTAMP)')
     
     # 调试选项
     parser.add_argument('--debug', action='store_true', help='Debug mode (fewer samples)')
@@ -85,15 +105,21 @@ def run_inference(
     merge_method: str = 'mixture',
     no_baseline_calibration: bool = False,
     is_category: bool = False,
+    model_type: str = 'internvl2-2b',
     debug: bool = False,
     dry_run: bool = False
 ) -> Optional[str]:
     """运行 LOGO 推理"""
     
+    # 获取模型配置
+    model_config = MODEL_CONFIGS.get(model_type, MODEL_CONFIGS['internvl2-2b'])
+    
     cmd = [
         'python', str(PROJECT_ROOT / 'logo' / 'infer_logo.py'),
         '--test_data', test_data,
         '--output_dir', output_dir,
+        '--model_type', model_type,
+        '--model_path', model_config['model_path'],
         '--top_k', str(top_k),
         '--signal_type', signal_type,
         '--merge_method', merge_method,
@@ -109,9 +135,9 @@ def run_inference(
     # 根据类型选择配置
     if is_category:
         cmd.extend(['--app_config', '/dev/null'])
-        cmd.extend(['--category_config', str(PROJECT_ROOT / 'config' / 'category_loras_config_internvl2.json')])
+        cmd.extend(['--category_config', str(PROJECT_ROOT / model_config['category_config'])])
     else:
-        cmd.extend(['--app_config', str(PROJECT_ROOT / 'config' / 'app_loras_config_internvl2.json')])
+        cmd.extend(['--app_config', str(PROJECT_ROOT / model_config['app_config'])])
         cmd.extend(['--category_config', '/dev/null'])
     
     if debug:
@@ -121,8 +147,8 @@ def run_inference(
     env['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
     # 限制图片最大像素和数量，防止 OOM
     # swift 框架会将小写参数名转为大写读取环境变量 (get_env_args)
-    env['MAX_PIXELS'] = '150000'  # 大幅降低以防止 OOM
-    env['MAX_NUM'] = '9'  # 限制每个样本最多 6 张图片
+    env['MAX_PIXELS'] = '100000'  # 大幅降低以防止 OOM
+    env['MAX_NUM'] = '12'  # 限制每个样本最多 6 张图片
     env['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
     
     if dry_run:
@@ -259,15 +285,17 @@ def main():
     
     # 创建输出目录
     timestamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+    model_suffix = 'qwen2vl' if 'qwen2' in args.model_type else 'internvl2'
     if args.output_dir:
         output_dir = Path(args.output_dir)
     else:
-        output_dir = PROJECT_ROOT / 'output' / f'logo_evaluation_{timestamp}'
+        output_dir = PROJECT_ROOT / 'output' / f'logo_evaluation_{model_suffix}_{timestamp}'
     output_dir.mkdir(parents=True, exist_ok=True)
     
     print("=" * 70)
     print("LOGO Evaluation Script")
     print("=" * 70)
+    print(f"Model Type:   {args.model_type}")
     print(f"GPU ID:       {args.gpu}")
     print(f"Top-K:        {args.top_k}")
     print(f"Signal Type:  {args.signal_type}")
@@ -280,6 +308,7 @@ def main():
     
     results = {
         'config': {
+            'model_type': args.model_type,
             'gpu': args.gpu,
             'top_k': args.top_k,
             'signal_type': args.signal_type,
@@ -288,6 +317,64 @@ def main():
         'app_results': {},
         'category_results': {},
     }
+    
+    # =========================================================================
+    # Val_100 Quick Evaluation Mode
+    # =========================================================================
+    if args.val100:
+        print("\n" + "=" * 70)
+        print("Val_100 Quick Evaluation")
+        print("=" * 70)
+        
+        val100_file = PROJECT_ROOT / 'data' / 'Val_100.jsonl'
+        if not val100_file.exists():
+            print(f"[ERROR] Val_100.jsonl not found: {val100_file}")
+            return
+        
+        print(f">>> Processing Val_100.jsonl")
+        
+        # 获取模型配置
+        model_config = MODEL_CONFIGS.get(args.model_type, MODEL_CONFIGS['internvl2-2b'])
+        
+        # 运行推理 (使用所有 LoRAs)
+        result_file = run_inference(
+            test_data=str(val100_file),
+            lora_config='',
+            output_dir=str(output_dir),
+            gpu_id=args.gpu,
+            top_k=args.top_k,
+            signal_type=args.signal_type,
+            merge_method=args.merge_method,
+            no_baseline_calibration=args.no_baseline_calibration,
+            is_category=False,  # 使用所有 App LoRAs
+            model_type=args.model_type,
+            debug=args.debug,
+            dry_run=args.dry_run
+        )
+        
+        if result_file and not args.dry_run:
+            # 重命名结果文件
+            final_result = output_dir / 'val100_results.jsonl'
+            os.rename(result_file, final_result)
+            
+            # 运行评估
+            step_acc, episode_acc = run_evaluation(str(final_result), args.dry_run)
+            
+            results['val100_results'] = {
+                'step_accuracy': step_acc,
+                'episode_accuracy': episode_acc,
+                'result_file': str(final_result)
+            }
+            
+            print(f"\n>>> Val_100 Results:")
+            print(f"    Step Accuracy: {step_acc}%")
+            print(f"    Episode Accuracy: {episode_acc}%")
+        
+        # Val_100 模式只评估这一个文件，然后保存结果
+        save_results(results, output_dir)
+        generate_summary(results, args, output_dir)
+        print(f"\n>>> Results saved to: {output_dir}")
+        return
     
     # =========================================================================
     # Part 1: App-level 评测
@@ -312,7 +399,7 @@ def main():
             # 运行推理
             result_file = run_inference(
                 test_data=str(test_file),
-                lora_config=str(PROJECT_ROOT / 'config' / 'app_loras_config_internvl2.json'),
+                lora_config='',  # Not used, config selected by model_type
                 output_dir=str(app_output_dir),
                 gpu_id=args.gpu,
                 top_k=args.top_k,
@@ -320,6 +407,7 @@ def main():
                 merge_method=args.merge_method,
                 no_baseline_calibration=args.no_baseline_calibration,
                 is_category=False,
+                model_type=args.model_type,
                 debug=args.debug,
                 dry_run=args.dry_run
             )
@@ -384,7 +472,7 @@ def main():
             # 运行推理
             result_file = run_inference(
                 test_data=str(test_file),
-                lora_config=str(PROJECT_ROOT / 'config' / 'category_loras_config_internvl2.json'),
+                lora_config='',  # Not used, config selected by model_type
                 output_dir=str(category_output_dir),
                 gpu_id=args.gpu,
                 top_k=args.top_k,
@@ -392,6 +480,7 @@ def main():
                 merge_method=args.merge_method,
                 no_baseline_calibration=args.no_baseline_calibration,
                 is_category=True,
+                model_type=args.model_type,
                 debug=args.debug,
                 dry_run=args.dry_run
             )

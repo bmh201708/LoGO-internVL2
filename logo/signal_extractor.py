@@ -608,9 +608,24 @@ class LOGOSignalExtractor:
             # Use inputs_embeds (already contains image features)
             model_inputs['inputs_embeds'] = inputs_embeds
             # Do NOT add input_ids when using inputs_embeds
+
+            # For Qwen2-VL: compute position_ids if model has get_rope_index method
+            # Qwen2-VL requires position_ids even when using inputs_embeds
+            base_model = self._get_base_model()
+            if hasattr(base_model, 'get_rope_index') and input_ids is not None:
+                try:
+                    image_grid_thw = kwargs.get('image_grid_thw')
+                    video_grid_thw = kwargs.get('video_grid_thw')
+                    position_ids, _ = base_model.get_rope_index(
+                        input_ids, image_grid_thw, video_grid_thw, attention_mask
+                    )
+                    model_inputs['position_ids'] = position_ids.contiguous()
+                    logger.info(f"Computed position_ids for Qwen2-VL: shape={position_ids.shape}")
+                except Exception as e:
+                    logger.warning(f"Failed to compute position_ids for Qwen2-VL: {e}")
         elif input_ids is not None:
             model_inputs['input_ids'] = input_ids
-        
+
         if attention_mask is not None:
             model_inputs['attention_mask'] = attention_mask
         if pixel_values is not None:
