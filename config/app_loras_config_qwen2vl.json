@@ -1,86 +1,86 @@
 [
     {
         "lora_name": "app_lora_adidas_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_adidas/qwen2-vl-7b-instruct/v0-20260131-111220/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Adidas app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/adidas/r16_lr5e-5/v0-20260309-230525/checkpoint-90",
+        "embedding_path": "data/embeddings/lora_app/adidas/adidas_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for adidas app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=90, eval_loss=0.503235, version=v0-20260309-230525)"
     },
     {
         "lora_name": "app_lora_amazon_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_amazon/qwen2-vl-7b-instruct/v0-20260130-190721/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Amazon app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/amazon/r4_lr5e-5/v0-20260309-005740/checkpoint-445",
+        "embedding_path": "data/embeddings/lora_app/amazon/amazon_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for amazon app (best checkpoint from hyperparam search: rank=4, lr=5e-5, step=445, eval_loss=0.234234, version=v0-20260309-005740)"
     },
     {
         "lora_name": "app_lora_calendar_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_calendar/qwen2-vl-7b-instruct/v0-20260131-131350/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Calendar app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/calendar/r16_lr5e-5/v0-20260310-110628/checkpoint-200",
+        "embedding_path": "data/embeddings/lora_app/calendar/calendar_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for calendar app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=200, eval_loss=0.366375, version=v0-20260310-110628)"
     },
     {
         "lora_name": "app_lora_clock_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_clock/qwen2-vl-7b-instruct/v0-20260131-052630/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Clock app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/clock/r16_lr5e-5/v0-20260312-182347/checkpoint-122",
+        "embedding_path": "data/embeddings/lora_app/clock/clock_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for clock app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=122, eval_loss=0.219269, version=v0-20260312-182347)"
     },
     {
         "lora_name": "app_lora_decathlon_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_decathlon/qwen2-vl-7b-instruct/v0-20260131-122711/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Decathlon app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/decathlon/r8_lr5e-5/v0-20260310-011701/checkpoint-110",
+        "embedding_path": "data/embeddings/lora_app/decathlon/decathlon_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for decathlon app (best checkpoint from hyperparam search: rank=8, lr=5e-5, step=110, eval_loss=0.471905, version=v0-20260310-011701)"
     },
     {
         "lora_name": "app_lora_ebay_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_ebay/qwen2-vl-7b-instruct/v0-20260130-223012/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on eBay app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/ebay/r8_lr5e-5/v0-20260312-021153/checkpoint-272",
+        "embedding_path": "data/embeddings/lora_app/ebay/ebay_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for ebay app (best checkpoint from hyperparam search: rank=8, lr=5e-5, step=272, eval_loss=0.313607, version=v0-20260312-021153)"
     },
     {
         "lora_name": "app_lora_etsy_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_etsy/qwen2-vl-7b-instruct/v0-20260131-202612/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Etsy app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/etsy/r16_lr5e-5/v0-20260310-044826/checkpoint-63",
+        "embedding_path": "data/embeddings/lora_app/etsy/etsy_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for etsy app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=63, eval_loss=0.428512, version=v0-20260310-044826)"
     },
     {
         "lora_name": "app_lora_flipkart_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_flipkart/qwen2-vl-7b-instruct/v0-20260131-010305/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Flipkart app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/flipkart/r16_lr5e-5/v0-20260310-060348/checkpoint-162",
+        "embedding_path": "data/embeddings/lora_app/flipkart/flipkart_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for flipkart app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=162, eval_loss=0.362289, version=v0-20260310-060348)"
     },
     {
         "lora_name": "app_lora_gmail_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_gmail/qwen2-vl-7b-instruct/v0-20260131-025059/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Gmail app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/gmail/r16_lr5e-5/v0-20260310-145827/checkpoint-177",
+        "embedding_path": "data/embeddings/lora_app/gmail/gmail_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for gmail app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=177, eval_loss=0.314481, version=v0-20260310-145827)"
     },
     {
         "lora_name": "app_lora_google_drive_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_google_drive/qwen2-vl-7b-instruct/v0-20260131-103300/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Google Drive app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/google_drive/r16_lr5e-5/v0-20260311-084635/checkpoint-63",
+        "embedding_path": "data/embeddings/lora_app/google_drive/google_drive_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for google_drive app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=63, eval_loss=0.283524, version=v0-20260311-084635)"
     },
     {
         "lora_name": "app_lora_google_maps_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_google_maps/qwen2-vl-7b-instruct/v0-20260131-150323/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Google Maps app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/google_maps/r16_lr5e-5/v0-20260310-145847/checkpoint-80",
+        "embedding_path": "data/embeddings/lora_app/google_maps/google_maps_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for google_maps app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=80, eval_loss=0.334156, version=v0-20260310-145847)"
     },
     {
         "lora_name": "app_lora_kitchen_stories_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_kitchen_stories/qwen2-vl-7b-instruct/v0-20260131-155209/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Kitchen Stories app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/kitchen_stories/r16_lr5e-5/v0-20260310-231503/checkpoint-104",
+        "embedding_path": "data/embeddings/lora_app/kitchen_stories/kitchen_stories_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for kitchen_stories app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=104, eval_loss=0.334816, version=v0-20260310-231503)"
     },
     {
         "lora_name": "app_lora_reminder_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_reminder/qwen2-vl-7b-instruct/v0-20260131-073315/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on Reminder app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/reminder/r8_lr5e-5/v0-20260312-020023/checkpoint-156",
+        "embedding_path": "data/embeddings/lora_app/reminder/reminder_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for reminder app (best checkpoint from hyperparam search: rank=8, lr=5e-5, step=156, eval_loss=0.550917, version=v0-20260312-020023)"
     },
     {
         "lora_name": "app_lora_youtube_qwen2vl",
-        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/qwen2_vl_lora_app/qwen2_vl_app_lora_youtube/qwen2-vl-7b-instruct/v0-20260131-093519/global_lora_10",
-        "embedding_path": "",
-        "description": "Qwen2-VL-7B LoRA trained on YouTube app tasks (v0_round10)"
+        "lora_path": "/home/hmpiao/hmpiao/jinyike/FedMABench/output/hyperparam_search_app_qwen2b/youtube/r16_lr5e-5/v0-20260312-184309/checkpoint-84",
+        "embedding_path": "data/embeddings/lora_app/youtube/youtube_jina_v4_emb.mean.npy",
+        "description": "Qwen2-VL LoRA for youtube app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=84, eval_loss=0.425034, version=v0-20260312-184309)"
     }
 ]
