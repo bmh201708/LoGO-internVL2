@@ -13,7 +13,7 @@ import sys
 
 # 设置环境变量以防止 OOM（必须在导入 swift 之前）
 if 'MAX_PIXELS' not in os.environ:
-    os.environ['MAX_PIXELS'] = '150000'
+    os.environ['MAX_PIXELS'] = '100000'
 if 'MAX_NUM' not in os.environ:
     os.environ['MAX_NUM'] = '9'
 os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', 'expandable_segments:True')
@@ -63,11 +63,11 @@ CONFIG_PATHS = {
         'category': os.path.join(CONFIG_DIR, 'category_loras_config_internvl2.json'),
     },
     'qwen2-vl-2b-instruct': {
-        'app': os.path.join(CONFIG_DIR, 'app_loras_config_qwen2vl.json'),
+        'app': os.path.join(CONFIG_DIR, 'app_loras_config_qwen2b.json'),
         'category': os.path.join(CONFIG_DIR, 'category_loras_config_qwen2vl.json'),
     },
     'qwen2-vl-7b-instruct': {
-        'app': os.path.join(CONFIG_DIR, 'app_loras_config_qwen2vl.json'),
+        'app': os.path.join(CONFIG_DIR, 'app_loras_config_qwen7b.json'),
         'category': os.path.join(CONFIG_DIR, 'category_loras_config_qwen2vl.json'),
     },
 }
@@ -132,14 +132,71 @@ def parse_args():
     return parser.parse_args()
 
 
+def _strip_image_tags(text: str) -> str:
+    """Remove standalone <image> lines from text (for history text-only context)."""
+    lines = text.split('\n')
+    cleaned = [line for line in lines if line.strip() != '<image>']
+    return '\n'.join(cleaned).strip()
+
+
+def _extract_episode_turns(sample: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Extract ordered (user -> assistant) turns from a multi-turn episode sample."""
+    messages = sample.get('messages', [])
+    episode_images = sample.get('images', [])
+    turns: List[Dict[str, Any]] = []
+    image_cursor = 0
+    turn_id = 0
+
+    for i, msg in enumerate(messages):
+        if msg.get('role') != 'user':
+            continue
+
+        query = msg.get('content', '')
+        if not query:
+            continue
+
+        # Pair this user turn with the nearest following assistant turn.
+        assistant_response = None
+        for j in range(i + 1, len(messages)):
+            role = messages[j].get('role')
+            if role == 'assistant':
+                assistant_response = messages[j].get('content', '')
+                break
+            if role == 'user':
+                break
+
+        if assistant_response is None:
+            continue
+
+        image_tag_count = query.count('<image>')
+        if image_tag_count > 0:
+            turn_images = episode_images[image_cursor:image_cursor + image_tag_count]
+            image_cursor += len(turn_images)
+        else:
+            turn_images = []
+
+        turn_id += 1
+        turns.append({
+            'turn_id': turn_id,
+            'query': query,
+            'images': turn_images,
+            'response': assistant_response,
+        })
+
+    return turns
+
+
 def load_jsonl(path: str) -> List[Dict[str, Any]]:
-    """Load JSONL dataset."""
-    data = []
+    """Load JSONL dataset as raw samples (single-turn or episode-style multi-turn)."""
+    data: List[Dict[str, Any]] = []
     with open(path, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
-            if line:
-                data.append(json.loads(line))
+            if not line:
+                continue
+
+            data.append(json.loads(line))
+
     return data
 
 
@@ -234,25 +291,34 @@ def run_logo_inference(args):
     
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
+    episode_output_dir = os.path.join(args.output_dir, 'episode_outputs')
+    os.makedirs(episode_output_dir, exist_ok=True)
     time_str = dt.datetime.now().strftime('%Y%m%d-%H%M%S')
-    merge_suffix = 'mix' if args.merge_method == 'mixture' else 'awa'  # awa = add_weighted_adapter
-    # Include model type in output filename for clarity
     model_suffix = 'qwen2vl' if 'qwen2' in args.model_type else 'internvl2'
     output_path = os.path.join(
-        args.output_dir, 
-        f'logo_results_{model_suffix}_{args.signal_type}_k{args.top_k}_{merge_suffix}_{time_str}.jsonl'
+        episode_output_dir,
+        f'retriever_results_{model_suffix}_{args.merge_method}_{args.signal_type}_k{args.top_k}_{time_str}.jsonl'
     )
-    
+
     # Load test data
     logger.info(f"Loading test data from: {args.test_data}")
     test_data = load_jsonl(args.test_data)
-    logger.info(f"Loaded {len(test_data)} samples")
-    
-    # Limit samples for debugging
+    logger.info(f"Loaded {len(test_data)} raw episodes")
+
+    # Enforce episode-only input.
+    non_episode_indices = [i for i, s in enumerate(test_data) if not isinstance(s.get('messages'), list)]
+    if non_episode_indices:
+        preview = non_episode_indices[:5]
+        raise ValueError(
+            f"Episode-only mode is enforced, but found {len(non_episode_indices)} non-episode samples. "
+            f"Example indices: {preview}"
+        )
+
+    # Limit number of episodes for debugging
     if args.debug or args.num_samples:
         num_samples = args.num_samples or 5
         test_data = test_data[:num_samples]
-        logger.info(f"Debug mode: processing {len(test_data)} samples")
+        logger.info(f"Debug mode: processing {len(test_data)} episodes")
     
     # Load LoRA configs based on lora_type
     config_paths = []
@@ -311,25 +377,22 @@ def run_logo_inference(args):
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
     # Run inference
-    logger.info("Starting LOGO inference...")
-    results = []
-    
-    for idx, sample in enumerate(tqdm(test_data, desc="LOGO Inference")):
-        query = sample.get('query', '')
-        images = sample.get('images', [])
-        label = sample.get('response', '')
-        
+    logger.info("Starting LOGO episode inference...")
+    episode_results: List[Dict[str, Any]] = []
+    total_turns = 0
+    successful_turns = 0
+
+    def infer_one_turn(
+        query: str,
+        images: List[str],
+        history: List[List[str]]
+    ) -> str:
         try:
-            # Resolve image paths
             resolved_images = resolve_image_paths(images, project_root)
-            
-            # Adjust query for available images
             adjusted_query = prepare_query(query, len(resolved_images))
-            
-            # Prepare example for template encoding
             example = {
                 'query': adjusted_query,
-                'history': [],
+                'history': history,
                 'system': None,
                 'images': resolved_images,
                 'audios': [],
@@ -337,12 +400,8 @@ def run_logo_inference(args):
                 'tools': None,
                 'objects': None,
             }
-            
-            # Encode to get inputs (for signal extraction)
-            inputs, tokenizer_kwargs = template.encode(example)
-            
-            # Extract signals and merge adapters
-            # Prepare inputs for signal extraction
+            inputs, _ = template.encode(example)
+
             signal_inputs = {}
             if 'input_ids' in inputs:
                 signal_inputs['input_ids'] = torch.tensor([inputs['input_ids']]).to(engine.model.device)
@@ -352,43 +411,28 @@ def run_logo_inference(args):
                 signal_inputs['inputs_embeds'] = inputs['inputs_embeds'].unsqueeze(0).to(engine.model.device)
             if 'pixel_values' in inputs:
                 signal_inputs['pixel_values'] = inputs['pixel_values'].to(engine.model.device)
-            # Qwen2-VL 需要 image_grid_thw 参数
             if 'image_grid_thw' in inputs:
                 signal_inputs['image_grid_thw'] = inputs['image_grid_thw'].to(engine.model.device)
-            
-            # LOGO: Extract signals and select adapters
+
             selected_loras, weights = engine.process_input(
-                **signal_inputs, 
+                **signal_inputs,
                 debug_signals=args.debug_signals
             )
-            
-            # Update template model
             template.model = engine.model
-            
-            # 根据 merge_method 选择不同的融合方式
+
             if args.merge_method == 'mixture':
-                # ==================== Mixture Mode (论文 Section 3.3) ====================
-                # output = Σ(wᵢ × LoRAᵢ(x)) - 输出级别加权求和
-                # 每个 LoRA 单独计算输出，然后加权混合
-                
-                # Create lora_mapping for Mixture mode
-                # lora_mapping has shape (batch_size, num_adapters)
                 lora_mapping = engine.get_lora_mapping(
                     selected_names=selected_loras,
                     weights=weights,
                     batch_size=1,
                     device=engine.model.device
                 )
-                
-                # Note: Mixture 模式在 _mixture_forward 中直接访问所有存在的 LoRA
-                # 权重由 lora_mapping 控制，权重为0的adapter会被跳过
-                
                 if resolved_images:
                     response, _ = inference(
                         engine.model,
                         template,
                         adjusted_query,
-                        history=[],
+                        history=history,
                         system=None,
                         images=resolved_images,
                         max_new_tokens=args.max_new_tokens,
@@ -402,7 +446,7 @@ def run_logo_inference(args):
                         engine.model,
                         template,
                         adjusted_query,
-                        history=[],
+                        history=history,
                         system=None,
                         max_new_tokens=args.max_new_tokens,
                         temperature=args.temperature,
@@ -411,26 +455,18 @@ def run_logo_inference(args):
                         mixture_adapter_names=engine.adapter_names
                     )
             else:
-                # ==================== add_weighted_adapter Mode ====================
-                # 参数级别融合：先合并 LoRA 参数，再进行推理
-                # 使用 PEFT 的 add_weighted_adapter 方法
-                
-                # 直接使用已选择的 adapters 和 weights 进行合并
                 engine.merge_with_weights(
                     adapter_names=selected_loras,
                     weights=weights,
                     combination_type=args.combination_type
                 )
-                
-                # 更新 template model（合并后模型状态已改变）
                 template.model = engine.model
-                
                 if resolved_images:
                     response, _ = inference(
                         engine.model,
                         template,
                         adjusted_query,
-                        history=[],
+                        history=history,
                         system=None,
                         images=resolved_images,
                         max_new_tokens=args.max_new_tokens,
@@ -441,63 +477,65 @@ def run_logo_inference(args):
                         engine.model,
                         template,
                         adjusted_query,
-                        history=[],
+                        history=history,
                         system=None,
                         max_new_tokens=args.max_new_tokens,
                         temperature=args.temperature
                     )
-                
-                # 清理合并的 adapter
                 engine.reset_merged_adapter()
-            
-            result = {
-                'idx': idx,
-                'query': query,
-                'response': response,
-                'label': label,
-                'selected_loras': selected_loras,
-                'weights': weights,
-                'num_images': len(resolved_images),
-                'signal_type': args.signal_type,
-                'merge_method': args.merge_method
-            }
-            
-            if args.debug:
-                logger.info(f"\nSample {idx}:")
-                logger.info(f"  Query: {query[:100]}...")
-                logger.info(f"  Selected LoRAs: {list(zip(selected_loras, [f'{w:.3f}' for w in weights]))}")
-                logger.info(f"  Response: {response[:200]}...")
-            
+            return response
         except Exception as e:
-            logger.error(f"Error processing sample {idx}: {e}")
+            logger.error(f"Error processing one turn: {e}")
             import traceback
             traceback.print_exc()
-            
-            result = {
-                'idx': idx,
-                'query': query,
-                'response': f"ERROR: {str(e)}",
-                'label': label,
-                'selected_loras': [],
-                'weights': [],
-                'num_images': len(images),
-                'signal_type': args.signal_type
-            }
-        
-        results.append(result)
-        append_to_jsonl(output_path, result)
-    
-    # Summary
-    successful = sum(1 for r in results if not r['response'].startswith('ERROR'))
+            return f"ERROR: {str(e)}"
+
+    for ep_idx, sample in enumerate(tqdm(test_data, desc="LOGO Episode Inference")):
+        episode_id = str(sample.get('episode_id', f'episode_{ep_idx:06d}'))
+        turns = _extract_episode_turns(sample)
+        rolling_history: List[List[str]] = []
+        ground_truths: List[str] = []
+        predictions: List[str] = []
+
+        for turn in turns:
+            gt = turn.get('response', '')
+            pred = infer_one_turn(
+                query=turn.get('query', ''),
+                images=turn.get('images', []),
+                history=rolling_history
+            )
+            ground_truths.append(gt)
+            predictions.append(pred)
+            total_turns += 1
+            if not pred.startswith('ERROR:'):
+                successful_turns += 1
+
+            # Keep multi-turn context with model outputs.
+            rolling_history.append([
+                _strip_image_tags(turn.get('query', '')),
+                pred
+            ])
+
+        episode_output = {
+            'episode_id': episode_id,
+            'mode': 'episode',
+            'num_steps': len(ground_truths),
+            'ground_truths': ground_truths,
+            'predictions': predictions,
+        }
+        append_to_jsonl(output_path, episode_output)
+        episode_results.append(episode_output)
+
     logger.info(f"\n{'='*60}")
-    logger.info(f"Inference complete!")
-    logger.info(f"  Total samples: {len(results)}")
-    logger.info(f"  Successful: {successful}")
-    logger.info(f"  Failed: {len(results) - successful}")
+    logger.info("Inference complete!")
+    logger.info(f"  Total episodes: {len(episode_results)}")
+    logger.info(f"  Total turns: {total_turns}")
+    logger.info(f"  Successful turns: {successful_turns}")
+    logger.info(f"  Failed turns: {total_turns - successful_turns}")
     logger.info(f"  Results saved to: {output_path}")
     logger.info(f"{'='*60}")
-    
-    return results
+
+    return episode_results
 
 
 if __name__ == '__main__':
