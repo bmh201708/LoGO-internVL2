@@ -44,7 +44,7 @@ def test_signal_extraction():
         'internvl2-2b',
         torch.float16,
         model_kwargs,
-        model_id_or_path='/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B'
+        model_id_or_path='/data0/piaohongming/InternVL2-2B'
     )
     print(f"   Base model loaded: {type(model).__name__}")
     
@@ -272,7 +272,7 @@ def test_signal_with_image():
         'internvl2-2b',
         torch.float16,
         model_kwargs,
-        model_id_or_path='/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B'
+        model_id_or_path='/data0/piaohongming/InternVL2-2B'
     )
     
     # Get template

@@ -47,7 +47,7 @@ def test_lora_selection():
     # 加载模型
     print("\n[1/3] Loading Qwen2-VL-7B model...")
     model_type = 'qwen2-vl-7b-instruct'
-    model_path = '/home/hmpiao/hmpiao/Qwen2-VL-7B-Instruct'
+    model_path = '/data0/piaohongming/models/Qwen2-VL-7B-Instruct'
     
     model_kwargs = {
         'device_map': 'auto',

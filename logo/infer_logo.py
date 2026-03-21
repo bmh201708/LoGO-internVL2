@@ -45,22 +45,30 @@ from logo.logo_engine import LOGOEngine, load_lora_configs, create_logo_engine
 
 logger = get_logger()
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONFIG_DIR = os.path.join(PROJECT_ROOT, 'config')
+
 
 # Model path defaults
 MODEL_PATHS = {
-    'internvl2-2b': '/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B',
-    'qwen2-vl-7b-instruct': '/home/hmpiao/hmpiao/Qwen2-VL-7B-Instruct',
+    'internvl2-2b': '/data0/piaohongming/InternVL2-2B',
+    'qwen2-vl-2b-instruct': '/data0/piaohongming/models/Qwen2-VL-2B-Instruct',
+    'qwen2-vl-7b-instruct': '/data0/piaohongming/models/Qwen2-VL-7B-Instruct',
 }
 
 # Config file paths by model type
 CONFIG_PATHS = {
     'internvl2-2b': {
-        'app': 'config/app_loras_config_internvl2.json',
-        'category': 'config/category_loras_config_internvl2.json',
+        'app': os.path.join(CONFIG_DIR, 'app_loras_config_internvl2.json'),
+        'category': os.path.join(CONFIG_DIR, 'category_loras_config_internvl2.json'),
+    },
+    'qwen2-vl-2b-instruct': {
+        'app': os.path.join(CONFIG_DIR, 'app_loras_config_qwen2vl.json'),
+        'category': os.path.join(CONFIG_DIR, 'category_loras_config_qwen2vl.json'),
     },
     'qwen2-vl-7b-instruct': {
-        'app': 'config/app_loras_config_qwen2vl.json',
-        'category': 'config/category_loras_config_qwen2vl.json',
+        'app': os.path.join(CONFIG_DIR, 'app_loras_config_qwen2vl.json'),
+        'category': os.path.join(CONFIG_DIR, 'category_loras_config_qwen2vl.json'),
     },
 }
 
@@ -70,8 +78,8 @@ def parse_args():
     
     # Model settings (first, as other defaults depend on it)
     parser.add_argument('--model_type', type=str, default='internvl2-2b',
-                        choices=['internvl2-2b', 'qwen2-vl-7b-instruct'],
-                        help='Model type: internvl2-2b or qwen2-vl-7b-instruct')
+                        choices=['internvl2-2b', 'qwen2-vl-2b-instruct', 'qwen2-vl-7b-instruct'],
+                        help='Model type: internvl2-2b, qwen2-vl-2b-instruct, or qwen2-vl-7b-instruct')
     parser.add_argument('--model_path', type=str, default=None,
                         help='Path to base model (auto-detected if not specified)')
     

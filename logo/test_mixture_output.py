@@ -50,7 +50,7 @@ def main():
         'internvl2-2b',
         torch.float16,
         model_kwargs,
-        model_dir='/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B'
+        model_dir='/data0/piaohongming/InternVL2-2B'
     )
     
     # 2. Load a single LoRA using Swift

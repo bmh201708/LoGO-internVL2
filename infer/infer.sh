@@ -33,7 +33,7 @@ echo "==========================================="
 swift infer \
   --ckpt_dir "$LORA_CKPT" \
   --model_type internvl2-2b \
-  --model_id_or_path /home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B \
+  --model_id_or_path /data0/piaohongming/InternVL2-2B \
   --sft_type lora \
   --val_dataset "$TEST_DATA" \
   --result_dir "$OUTPUT_BASE/val_100"

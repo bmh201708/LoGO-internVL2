@@ -95,5 +95,5 @@ evaluation/
 
 ## Model Paths
 
-- **InternVL2-2B**: `/home/hmpiao/hmpiao/InternVL2-2B-ModelScope/OpenGVLab/InternVL2-2B`
-- **Qwen2-VL-7B**: `/home/hmpiao/hmpiao/Qwen2-VL-7B-Instruct`
+- **InternVL2-2B**: `/data0/piaohongming/InternVL2-2B`
+- **Qwen2-VL-7B**: `/data0/piaohongming/models/Qwen2-VL-7B-Instruct`
