@@ -98,6 +98,96 @@ class LOGOEngine:
         
         # Tokenizer for baseline computation
         self._tokenizer = None
+
+    def _get_peft_config_map(self) -> Dict[str, Any]:
+        """Get adapter config map from model (or wrapped base_model)."""
+        peft_config = getattr(self.model, 'peft_config', None)
+        if isinstance(peft_config, dict):
+            return peft_config
+
+        base_model = getattr(self.model, 'base_model', None)
+        peft_config = getattr(base_model, 'peft_config', None) if base_model is not None else None
+        if isinstance(peft_config, dict):
+            return peft_config
+
+        return {}
+
+    def _get_adapter_rank(self, adapter_name: str) -> Optional[int]:
+        """
+        Infer effective adapter rank (r), considering rank_pattern if present.
+        Mirrors PEFT's internal logic for rank validation.
+        """
+        peft_config = self._get_peft_config_map().get(adapter_name)
+        if peft_config is None:
+            return None
+
+        rank = getattr(peft_config, 'r', None)
+        rank_pattern = getattr(peft_config, 'rank_pattern', None)
+        if isinstance(rank_pattern, dict) and rank_pattern:
+            rank_candidates = [v for v in rank_pattern.values() if isinstance(v, int)]
+            if isinstance(rank, int):
+                rank_candidates.append(rank)
+            if rank_candidates:
+                return max(rank_candidates)
+
+        return rank if isinstance(rank, int) else None
+
+    def _get_adapter_scale(self, adapter_name: str) -> Optional[float]:
+        """Infer LoRA scale alpha/r for logging and diagnostics."""
+        peft_config = self._get_peft_config_map().get(adapter_name)
+        if peft_config is None:
+            return None
+
+        rank = self._get_adapter_rank(adapter_name)
+        alpha = getattr(peft_config, 'lora_alpha', None)
+        if isinstance(alpha, (int, float)) and isinstance(rank, int) and rank > 0:
+            return float(alpha) / float(rank)
+        return None
+
+    def _resolve_merge_strategy(
+        self,
+        adapter_names: List[str],
+        requested_combination_type: str
+    ) -> Tuple[str, Dict[str, Any]]:
+        """
+        Resolve weighted merge strategy for possible heterogeneous LoRAs.
+
+        For heterogeneous ranks, force weighted-delta + SVD merge, because
+        PEFT linear/cat arithmetic paths may fail or be unstable for mixed ranks.
+        """
+        ranks = [self._get_adapter_rank(name) for name in adapter_names]
+        known_ranks = [r for r in ranks if r is not None]
+        unique_ranks = sorted(set(known_ranks))
+
+        scales = [self._get_adapter_scale(name) for name in adapter_names]
+        known_scales = [s for s in scales if s is not None]
+        unique_scales = sorted(set(round(s, 8) for s in known_scales))
+
+        combination_type = requested_combination_type
+        merge_kwargs: Dict[str, Any] = {}
+
+        # Heterogeneous rank adapters: enforce weighted-delta + SVD.
+        if len(unique_ranks) > 1:
+            if requested_combination_type != 'svd':
+                logger.info(
+                    f"Detected heterogeneous LoRA ranks {unique_ranks}; "
+                    f"overriding combination_type from '{requested_combination_type}' to 'svd' "
+                    f"(weighted-delta + SVD)."
+                )
+            else:
+                logger.info(f"Detected heterogeneous LoRA ranks {unique_ranks}; using weighted-delta + SVD.")
+            combination_type = 'svd'
+            merge_kwargs['svd_rank'] = max(unique_ranks)
+        elif requested_combination_type == 'svd' and unique_ranks:
+            merge_kwargs['svd_rank'] = max(unique_ranks)
+
+        if len(unique_scales) > 1:
+            logger.info(
+                f"Detected heterogeneous LoRA scales alpha/r {unique_scales}; "
+                f"weighted-delta merge will apply per-adapter scaling."
+            )
+
+        return combination_type, merge_kwargs
         
     def load_all_loras(self) -> None:
         """
@@ -370,13 +460,24 @@ class LOGOEngine:
         self.merge_count += 1
         merged_name = f'logo_merged_{self.merge_count}'
         
+        effective_combination_type, merge_kwargs = self._resolve_merge_strategy(
+            selected_names,
+            combination_type
+        )
+
+        logger.info(
+            f"add_weighted_adapter strategy: requested={combination_type}, "
+            f"effective={effective_combination_type}, kwargs={merge_kwargs}"
+        )
+
         # Merge using Swift's add_weighted_adapter
         try:
             self.model.add_weighted_adapter(
                 adapters=selected_names,
                 weights=weights,
                 adapter_name=merged_name,
-                combination_type=combination_type
+                combination_type=effective_combination_type,
+                **merge_kwargs
             )
             
             # Set the merged adapter as active
@@ -481,6 +582,15 @@ class LOGOEngine:
         merged_name = f'logo_merged_{self.merge_count}'
         
         logger.info(f"Merging adapters: {list(zip(adapter_names, [f'{w:.3f}' for w in weights]))}")
+
+        effective_combination_type, merge_kwargs = self._resolve_merge_strategy(
+            adapter_names,
+            combination_type
+        )
+        logger.info(
+            f"add_weighted_adapter strategy: requested={combination_type}, "
+            f"effective={effective_combination_type}, kwargs={merge_kwargs}"
+        )
         
         # Merge using Swift's add_weighted_adapter
         try:
@@ -488,7 +598,8 @@ class LOGOEngine:
                 adapters=adapter_names,
                 weights=weights,
                 adapter_name=merged_name,
-                combination_type=combination_type
+                combination_type=effective_combination_type,
+                **merge_kwargs
             )
             
             # Set the merged adapter as active
@@ -501,9 +612,41 @@ class LOGOEngine:
             logger.info(f"Created and activated merged adapter: {merged_name}")
             
         except Exception as e:
-            logger.error(f"Failed to merge adapters: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Failed to merge adapters (combination_type={effective_combination_type}): {e}")
+
+            # Retry with weighted-delta + SVD if rank mismatch escaped the pre-check.
+            err_text = str(e).lower()
+            if (
+                effective_combination_type != 'svd'
+                and 'same r value' in err_text
+                and len(adapter_names) > 1
+            ):
+                try:
+                    retry_kwargs: Dict[str, Any] = {}
+                    known_ranks = [self._get_adapter_rank(name) for name in adapter_names]
+                    known_ranks = [r for r in known_ranks if r is not None]
+                    if known_ranks:
+                        retry_kwargs['svd_rank'] = max(known_ranks)
+                    logger.info(
+                        f"Retrying merge with weighted-delta + SVD for heterogeneous adapters, kwargs={retry_kwargs}"
+                    )
+                    self.model.add_weighted_adapter(
+                        adapters=adapter_names,
+                        weights=weights,
+                        adapter_name=merged_name,
+                        combination_type='svd',
+                        **retry_kwargs
+                    )
+                    if hasattr(self.model, 'set_adapter'):
+                        self.model.set_adapter(merged_name)
+                    elif hasattr(self.model, 'base_model') and hasattr(self.model.base_model, 'set_adapter'):
+                        self.model.base_model.set_adapter(merged_name)
+                    self.current_merged_adapter = merged_name
+                    logger.info(f"Created and activated merged adapter (SVD retry): {merged_name}")
+                    return merged_name
+                except Exception as retry_e:
+                    logger.error(f"SVD retry failed: {retry_e}")
+
             # Fallback: just use the top-1 adapter
             if adapter_names:
                 top_adapter = adapter_names[0]
