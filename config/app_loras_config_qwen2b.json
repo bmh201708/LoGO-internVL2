@@ -5,7 +5,7 @@
         "description": "Qwen2-VL LoRA for adidas app (best checkpoint from hyperparam search: rank=16, lr=5e-5, step=90, eval_loss=0.503235, version=v0-20260309-230525)"
     },
     {
-        "lora_name": "app_lora_amazon_qwen2vl",
+        "lora_name": "app_lora_amazon_qwen2b",
         "lora_path": "/home/piaohongming/xuerong/lorahub/GUIHub/new_lora/amazon",
         "description": "Qwen2-VL LoRA for amazon app (best checkpoint from hyperparam search: rank=4, lr=5e-5, step=445, eval_loss=0.234234, version=v0-20260309-005740)"
     },

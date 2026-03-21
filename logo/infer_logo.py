@@ -5,7 +5,7 @@ Main script for running inference with LOGO (LoRA on the Go) method.
 Dynamically selects and merges LoRAs based on input signals.
 
 Usage:
-    python logo/infer_logo.py --test_data data/Val_100.jsonl --signal_type norm --top_k 5
+    python logo/infer_logo.py --test_data data/Val_100.jsonl --signal_type norm --top_k 3
 
 python logo/infer_logo.py --model_type qwen2-vl-2b-instruct  --test_data /data0/piaohongming/jinyike/data/data-test/app/amazon_train.jsonl --num_samples 1 --signal_type uniform --merge_method add_weighted_adapter --lora_type app --no_baseline_calibration --output_dir /data0/piaohongming/jinyike/LoGO-internVL2/output/compat_check
 """
@@ -96,7 +96,7 @@ def parse_args():
                         help='Output directory for results')
     
     # LOGO settings
-    parser.add_argument('--top_k', type=int, default=5,
+    parser.add_argument('--top_k', type=int, default=3,
                         help='Number of top LoRAs to select')
     parser.add_argument('--signal_type', type=str, default='norm',
                         choices=['norm', 'entropy', 'embedding', 'uniform'],

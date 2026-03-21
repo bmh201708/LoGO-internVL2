@@ -1,0 +1,87 @@
+[INFO:swift] [LOGO] Patched PEFT Linear.forward for mixture mode support
+[INFO:swift] Successfully registered `/data0/piaohongming/jinyike/LoGO-internVL2/swift/llm/data/dataset_info.json`
+[INFO:swift] No vLLM installed, if you are using vLLM, you will get `ImportError: cannot import name 'get_vllm_engine' from 'swift.llm'`
+[INFO:swift] No LMDeploy installed, if you are using LMDeploy, you will get `ImportError: cannot import name 'prepare_lmdeploy_engine_template' from 'swift.llm'`
+[INFO:swift] Global seed set to 42
+[INFO:swift] Using default model path for qwen2-vl-2b-instruct: /data0/piaohongming/models/Qwen2-VL-2B-Instruct
+[INFO:swift] Using default app config: /data0/piaohongming/jinyike/LoGO-internVL2/config/app_loras_config_qwen2b.json
+[INFO:swift] Using default category config: /data0/piaohongming/jinyike/LoGO-internVL2/config/category_loras_config_qwen2vl.json
+[INFO:swift] Loading test data from: /data0/piaohongming/jinyike/data/data-test/app/amazon_train.jsonl
+[INFO:swift] Loaded 20 raw episodes
+[INFO:swift] Debug mode: processing 1 episodes
+[INFO:swift] Loading app LoRA configs from: /data0/piaohongming/jinyike/LoGO-internVL2/config/app_loras_config_qwen2b.json
+[INFO:swift] Loaded 14 LoRA configs from 1 files
+[INFO:swift] Using lora_type=app, loaded 14 LoRA configs
+[INFO:swift] Loading base model: qwen2-vl-2b-instruct
+[INFO:swift] Loading the model using model_dir: /data0/piaohongming/models/Qwen2-VL-2B-Instruct
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.48, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[INFO:swift] model_kwargs: {'device_map': 'auto', 'low_cpu_mem_usage': True}
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+[DEBUG] MAX_PIXELS = 100000
+[DEBUG] MAX_NUM = 9
+[DEBUG] PYTORCH_CUDA_ALLOC_CONF = expandable_segments:True
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:23<00:23, 23.23s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:26<00:00, 11.45s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:26<00:00, 13.22s/it]
+[INFO:swift] model.max_model_len: 32768
+[INFO:swift] Using template type: qwen2-vl
+[INFO:swift] Initializing LOGO engine...
+[INFO:swift] Loading all LoRA adapters...
+[INFO:swift] Loading 14 LoRA adapters...
+[INFO:swift] [1/14] Loading app_lora_adidas_qwen2b
+[INFO:swift] [2/14] Loading app_lora_amazon_qwen2vl
+[INFO:swift] [3/14] Loading app_lora_calendar_qwen2b
+[INFO:swift] [4/14] Loading app_lora_clock_qwen2b
+[INFO:swift] [5/14] Loading app_lora_decathlon_qwen2b
+[INFO:swift] [6/14] Loading app_lora_ebay_qwen2b
+[INFO:swift] [7/14] Loading app_lora_etsy_qwen2b
+[INFO:swift] [8/14] Loading app_lora_flipkart_qwen2b
+[INFO:swift] [9/14] Loading app_lora_gmail_qwen2b
+[INFO:swift] [10/14] Loading app_lora_google_drive_qwen2b
+[INFO:swift] [11/14] Loading app_lora_google_maps_qwen2b
+[INFO:swift] [12/14] Loading app_lora_kitchen_stories_qwen2b
+[INFO:swift] [13/14] Loading app_lora_reminder_qwen2b
+[INFO:swift] [14/14] Loading app_lora_youtube_qwen2b
+[INFO:swift] Successfully loaded 14 LoRA adapters
+[INFO:swift] Baseline calibration disabled - using raw signals
+[INFO:swift] LOGO Engine Info: {'loaded_adapters': ['app_lora_adidas_qwen2b', 'app_lora_amazon_qwen2vl', 'app_lora_calendar_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_decathlon_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_gmail_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_google_maps_qwen2b', 'app_lora_kitchen_stories_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], 'num_adapters': 14, 'top_k': 5, 'signal_type': 'uniform', 'target_block_idx': -1, 'token_position': 'last', 'combination_type': 'linear', 'use_baseline_calibration': False, 'has_embeddings': [], 'current_merged_adapter': None, 'merge_count': 0}
+[INFO:swift] Starting LOGO episode inference...
+LOGO Episode Inference:   0%|          | 0/1 [00:00<?, ?it/s][INFO:swift] Setting image_factor: 16. You can adjust this hyperparameter through the environment variable: `IMAGE_FACTOR`.
+[INFO:swift] Setting resized_height: None. You can adjust this hyperparameter through the environment variable: `RESIZED_HEIGHT`.
+[INFO:swift] Setting resized_width: None. You can adjust this hyperparameter through the environment variable: `RESIZED_WIDTH`.
+[INFO:swift] Setting min_pixels: 576. You can adjust this hyperparameter through the environment variable: `MIN_PIXELS`.
+[INFO:swift] Using environment variable `MAX_PIXELS`, Setting max_pixels: 100000.
+[INFO:swift] Selected LoRAs: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Merging adapters: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Detected heterogeneous LoRA ranks [4, 8, 16]; overriding combination_type from 'linear' to 'svd' (weighted-delta + SVD).
+[INFO:swift] add_weighted_adapter strategy: requested=linear, effective=svd, kwargs={'svd_rank': 16}
+[INFO:swift] Created and activated merged adapter: logo_merged_1
+[INFO:swift] Selected LoRAs: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Merging adapters: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Detected heterogeneous LoRA ranks [4, 8, 16]; overriding combination_type from 'linear' to 'svd' (weighted-delta + SVD).
+[INFO:swift] add_weighted_adapter strategy: requested=linear, effective=svd, kwargs={'svd_rank': 16}
+[INFO:swift] Created and activated merged adapter: logo_merged_2
+[INFO:swift] Selected LoRAs: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Merging adapters: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Detected heterogeneous LoRA ranks [4, 8, 16]; overriding combination_type from 'linear' to 'svd' (weighted-delta + SVD).
+[INFO:swift] add_weighted_adapter strategy: requested=linear, effective=svd, kwargs={'svd_rank': 16}
+[INFO:swift] Created and activated merged adapter: logo_merged_3
+[INFO:swift] Selected LoRAs: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Merging adapters: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Detected heterogeneous LoRA ranks [4, 8, 16]; overriding combination_type from 'linear' to 'svd' (weighted-delta + SVD).
+[INFO:swift] add_weighted_adapter strategy: requested=linear, effective=svd, kwargs={'svd_rank': 16}
+[INFO:swift] Created and activated merged adapter: logo_merged_4
+[INFO:swift] Selected LoRAs: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Merging adapters: [('app_lora_adidas_qwen2b', '0.200'), ('app_lora_amazon_qwen2vl', '0.200'), ('app_lora_calendar_qwen2b', '0.200'), ('app_lora_clock_qwen2b', '0.200'), ('app_lora_decathlon_qwen2b', '0.200')]
+[INFO:swift] Detected heterogeneous LoRA ranks [4, 8, 16]; overriding combination_type from 'linear' to 'svd' (weighted-delta + SVD).
+[INFO:swift] add_weighted_adapter strategy: requested=linear, effective=svd, kwargs={'svd_rank': 16}
+[ERROR:swift] Failed to merge adapters (combination_type=svd): CUDA out of memory. Tried to allocate 264.00 MiB. GPU 0 has a total capacity of 47.44 GiB of which 59.38 MiB is free. Including non-PyTorch memory, this process has 47.37 GiB memory in use. Of the allocated memory 46.13 GiB is allocated by PyTorch, and 919.16 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[INFO:swift] Falling back to single adapter: app_lora_adidas_qwen2b
+LOGO Episode Inference: 100%|██████████| 1/1 [15:48<00:00, 948.31s/it]LOGO Episode Inference: 100%|██████████| 1/1 [15:48<00:00, 948.37s/it]
+[INFO:swift] 
+============================================================
+[INFO:swift] Inference complete!
+[INFO:swift]   Total episodes: 1
+[INFO:swift]   Total turns: 5
+[INFO:swift]   Successful turns: 5
+[INFO:swift]   Failed turns: 0
+[INFO:swift]   Results saved to: /data0/piaohongming/jinyike/LoGO-internVL2/output/compat_check/episode_outputs/retriever_results_qwen2vl_add_weighted_adapter_uniform_k5_20260321-231617.jsonl
+[INFO:swift] ============================================================
