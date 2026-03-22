@@ -1,0 +1,778 @@
+[INFO:swift] [LOGO] Patched PEFT Linear.forward for mixture mode support
+[INFO:swift] Successfully registered `/data0/piaohongming/jinyike/LoGO-internVL2/swift/llm/data/dataset_info.json`
+[INFO:swift] No vLLM installed, if you are using vLLM, you will get `ImportError: cannot import name 'get_vllm_engine' from 'swift.llm'`
+[INFO:swift] No LMDeploy installed, if you are using LMDeploy, you will get `ImportError: cannot import name 'prepare_lmdeploy_engine_template' from 'swift.llm'`
+[INFO:swift] Using single GPU via CUDA_VISIBLE_DEVICES=2
+[INFO:swift] Global seed set to 42
+[INFO:swift] Using default model path for qwen2-vl-2b-instruct: /data0/piaohongming/models/Qwen2-VL-2B-Instruct
+[INFO:swift] Using default app config: /data0/piaohongming/jinyike/LoGO-internVL2/config/app_loras_config_qwen2b.json
+[INFO:swift] Using default category config: /data0/piaohongming/jinyike/LoGO-internVL2/config/category_loras_config_qwen2vl.json
+[INFO:swift] Loading test data from: /data0/piaohongming/jinyike/data/data-test/app/amazon_train.jsonl
+[INFO:swift] Loaded 20 raw episodes
+[INFO:swift] Loading app LoRA configs from: /data0/piaohongming/jinyike/LoGO-internVL2/config/app_loras_config_qwen2b.json
+[INFO:swift] Loaded 14 LoRA configs from 1 files
+[INFO:swift] Loaded 14 LoRA configs before constraints
+[INFO:swift] Using lora_pool with 8 items: ['amazon', 'clock', 'ebay', 'etsy', 'flipkart', 'google_drive', 'reminder', 'youtube']
+[INFO:swift] Applied lora_pool with 8 entries: kept 8, dropped 6.
+[INFO:swift] Using lora_type=app, final loaded LoRA configs: 8
+[INFO:swift] Loading base model: qwen2-vl-2b-instruct
+[INFO:swift] Loading the model using model_dir: /data0/piaohongming/models/Qwen2-VL-2B-Instruct
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.48, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+[INFO:swift] model_kwargs: {'device_map': 'auto', 'low_cpu_mem_usage': True}
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+[DEBUG] MAX_PIXELS = 100000
+[DEBUG] MAX_NUM = 9
+[DEBUG] PYTORCH_CUDA_ALLOC_CONF = expandable_segments:True
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:34<00:34, 34.60s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:39<00:00, 17.08s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:39<00:00, 19.71s/it]
+[INFO:swift] model.max_model_len: 32768
+[INFO:swift] Using template type: qwen2-vl
+[INFO:swift] Initializing LOGO engine...
+[INFO:swift] Loading all LoRA adapters...
+[INFO:swift] Loading 8 LoRA adapters...
+[INFO:swift] [1/8] Loading app_lora_amazon_qwen2b
+[INFO:swift] [2/8] Loading app_lora_clock_qwen2b
+[INFO:swift] [3/8] Loading app_lora_ebay_qwen2b
+[INFO:swift] [4/8] Loading app_lora_etsy_qwen2b
+[INFO:swift] [5/8] Loading app_lora_flipkart_qwen2b
+[INFO:swift] [6/8] Loading app_lora_google_drive_qwen2b
+[INFO:swift] [7/8] Loading app_lora_reminder_qwen2b
+[INFO:swift] [8/8] Loading app_lora_youtube_qwen2b
+[INFO:swift] Successfully loaded 8 LoRA adapters
+[INFO:swift] Initialized LOGOSignalExtractor with signal_type=entropy, calibration=False
+[INFO:swift] Baseline calibration disabled - using raw signals
+[INFO:swift] LOGO Engine Info: {'loaded_adapters': ['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], 'num_adapters': 8, 'top_k': 3, 'signal_type': 'entropy', 'target_block_idx': -1, 'token_position': 'last', 'combination_type': 'linear', 'use_baseline_calibration': False, 'has_embeddings': [], 'current_merged_adapter': None, 'merge_count': 0, 'baseline_computed': False}
+[INFO:swift] Starting LOGO inference in episode mode...
+LOGO Episode Inference:   0%|          | 0/20 [00:00<?, ?it/s][INFO:swift] Setting image_factor: 16. You can adjust this hyperparameter through the environment variable: `IMAGE_FACTOR`.
+[INFO:swift] Setting resized_height: None. You can adjust this hyperparameter through the environment variable: `RESIZED_HEIGHT`.
+[INFO:swift] Setting resized_width: None. You can adjust this hyperparameter through the environment variable: `RESIZED_WIDTH`.
+[INFO:swift] Setting min_pixels: 576. You can adjust this hyperparameter through the environment variable: `MIN_PIXELS`.
+[INFO:swift] Using environment variable `MAX_PIXELS`, Setting max_pixels: 100000.
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 175])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 332])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 482])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 632])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 782])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:   5%|▌         | 1/20 [00:36<11:37, 36.70s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 195])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 347])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 511])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 668])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 829])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 990])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  10%|█         | 2/20 [01:43<16:24, 54.69s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 190])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 340])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 490])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 640])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 790])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 940])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1090])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1240])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1390])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] History+current has 10 images > MAX_NUM=9; dropping earliest 1 images.
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1418])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] History+current has 11 images > MAX_NUM=9; dropping earliest 2 images.
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1446])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] History+current has 12 images > MAX_NUM=9; dropping earliest 3 images.
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1474])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] History+current has 13 images > MAX_NUM=9; dropping earliest 4 images.
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1502])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] History+current has 14 images > MAX_NUM=9; dropping earliest 5 images.
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1530])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  15%|█▌        | 3/20 [04:00<26:01, 91.82s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 181])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 333])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 490])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 645])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 803])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  20%|██        | 4/20 [04:56<20:47, 77.99s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 188])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 340])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 498])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 651])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 810])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 961])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1120])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1279])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1430])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  25%|██▌       | 5/20 [07:03<23:51, 95.46s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 168])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 322])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 479])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 638])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 793])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 951])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1103])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1253])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  30%|███       | 6/20 [08:14<20:22, 87.34s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 186])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 336])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 493])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 652])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  35%|███▌      | 7/20 [09:01<16:02, 74.02s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 182])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 339])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 489])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  40%|████      | 8/20 [09:18<11:11, 55.93s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 177])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 329])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 488])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 644])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 802])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 954])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  45%|████▌     | 9/20 [10:22<10:42, 58.42s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 181])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 331])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 481])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 631])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 781])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  50%|█████     | 10/20 [10:49<08:06, 48.63s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 193])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 351])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 509])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  55%|█████▌    | 11/20 [11:17<06:21, 42.41s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 176])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 328])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 486])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 644])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 804])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  60%|██████    | 12/20 [12:42<07:23, 55.45s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 171])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 331])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 490])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 642])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  65%|██████▌   | 13/20 [14:24<08:05, 69.34s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 189])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 339])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 498])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 657])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 815])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 965])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1115])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  70%|███████   | 14/20 [15:28<06:47, 67.94s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 185])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 342])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 499])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 656])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 815])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  75%|███████▌  | 15/20 [16:18<05:11, 62.29s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 205])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 355])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 505])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 655])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 805])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 955])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1105])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  80%|████████  | 16/20 [17:11<03:58, 59.58s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 195])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 353])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 521])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 680])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  85%|████████▌ | 17/20 [18:14<03:02, 60.67s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 189])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 341])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 500])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 654])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 812])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 964])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 1116])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  90%|█████████ | 18/20 [19:17<02:02, 61.28s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 172])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 333])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 483])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 633])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 783])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 933])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference:  95%|█████████▌| 19/20 [19:53<00:53, 53.87s/it][INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 180])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_ebay_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 332])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 489])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 644])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 802])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_amazon_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+[INFO:swift] Extracting signals from transformer block 27
+[INFO:swift] Found 1 separate Q projection layers
+[INFO:swift] Found 1 LoRA layers in target block
+[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 952])
+[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.333'), ('app_lora_etsy_qwen2b', '0.333'), ('app_lora_clock_qwen2b', '0.333')]
+[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
+LOGO Episode Inference: 100%|██████████| 20/20 [20:45<00:00, 53.16s/it]LOGO Episode Inference: 100%|██████████| 20/20 [20:45<00:00, 62.26s/it]
+[INFO:swift] 
+============================================================
+[INFO:swift] Inference complete!
+[INFO:swift]   Total episodes: 20
+[INFO:swift]   Total turns: 119
+[INFO:swift]   Successful turns: 119
+[INFO:swift]   Failed turns: 0
+[INFO:swift]   Results saved to: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-012309/amazon/entropy/episode/episode_outputs/retriever_results_qwen2vl_mixture_entropy_k3_20260322-024638.jsonl
+[INFO:swift] ============================================================

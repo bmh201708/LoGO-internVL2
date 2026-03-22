@@ -1,0 +1,12 @@
+
+[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-012228/decathlon/entropy/step/episode_outputs/retriever_results_qwen2vl_mixture_entropy_k3_20260322-045534.jsonl
+
+============================================================
+EVALUATION REPORT | Original Inference Mode: STEP
+Total Episodes Processed: 20
+Total Steps Evaluated   : 131
+------------------------------------------------------------
+Step-level Accuracy (TF-IDF > 0.6)      : 48.09%
+ * Computed independently per ground-truth-primed step.
+============================================================
+

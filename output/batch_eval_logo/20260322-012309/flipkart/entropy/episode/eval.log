@@ -1,0 +1,12 @@
+
+[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-012309/flipkart/entropy/episode/episode_outputs/retriever_results_qwen2vl_mixture_entropy_k3_20260322-052839.jsonl
+
+============================================================
+EVALUATION REPORT | Original Inference Mode: EPISODE
+Total Episodes Processed: 20
+Total Steps Evaluated   : 102
+------------------------------------------------------------
+Episode-level Accuracy (All steps > 0.6): 15.00%
+ * Requires cascading success across the entire autoregressive chain.
+============================================================
+

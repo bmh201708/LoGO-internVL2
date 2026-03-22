@@ -27,7 +27,8 @@ print(f"[DEBUG] PYTORCH_CUDA_ALLOC_CONF = {os.environ.get('PYTORCH_CUDA_ALLOC_CO
 import json
 import argparse
 import datetime as dt
-from typing import Dict, List, Any, Optional
+import re
+from typing import Dict, List, Any, Optional, Tuple
 from tqdm import tqdm
 
 import torch
@@ -84,6 +85,10 @@ def parse_args():
                         help='Model type: internvl2-2b, qwen2-vl-2b-instruct, or qwen2-vl-7b-instruct')
     parser.add_argument('--model_path', type=str, default=None,
                         help='Path to base model (auto-detected if not specified)')
+    parser.add_argument('--gpu_id', type=int, default=None,
+                        help='Use a single physical GPU id by setting CUDA_VISIBLE_DEVICES before model loading')
+    parser.add_argument('--device_map', type=str, default='auto',
+                        help='Model loading device_map passed to transformers/swift (default: auto)')
     
     # Data paths
     parser.add_argument('--test_data', type=str, default='data/Val_100.jsonl',
@@ -112,11 +117,18 @@ def parse_args():
     parser.add_argument('--merge_method', type=str, default='mixture',
                         choices=['mixture', 'add_weighted_adapter'],
                         help='LoRA merging method: mixture (output-level, 论文推荐) or add_weighted_adapter (parameter-level)')
+    parser.add_argument('--inference_mode', type=str, default='episode',
+                        choices=['step', 'episode'],
+                        help='History mode: step uses ground-truth assistant history (teacher-forcing), '
+                             'episode uses model predictions as rolling history (autoregressive)')
     parser.add_argument('--no_baseline_calibration', action='store_true',
                         help='Disable baseline calibration for signal extraction')
     parser.add_argument('--lora_type', type=str, default='all',
                         choices=['all', 'app', 'category'],
                         help='Which LoRA types to load: all, app only, or category only')
+    parser.add_argument('--lora_pool', type=str, default=None,
+                        help='Optional candidate LoRA pool. Comma-separated items; each item can be '
+                             'full lora_name or short app/category key (e.g., amazon, google_maps).')
     parser.add_argument('--debug_signals', action='store_true',
                         help='Print all raw signals for debugging')
     
@@ -139,6 +151,115 @@ def _strip_image_tags(text: str) -> str:
     lines = text.split('\n')
     cleaned = [line for line in lines if line.strip() != '<image>']
     return '\n'.join(cleaned).strip()
+
+
+def _count_image_tags(text: str) -> int:
+    """Count image tags in text."""
+    return text.count('<image>')
+
+
+def _drop_earliest_image_tags(text: str, num_to_drop: int) -> str:
+    """Drop earliest <image> tags from text while preserving other text positions."""
+    if num_to_drop <= 0:
+        return text
+
+    lines = text.splitlines(keepends=True)
+    kept_lines: List[str] = []
+    dropped = 0
+
+    for line in lines:
+        if dropped < num_to_drop and line.strip() == '<image>':
+            dropped += 1
+            continue
+        kept_lines.append(line)
+
+    result = ''.join(kept_lines)
+
+    # Fallback for inline <image> occurrences.
+    while dropped < num_to_drop:
+        idx = result.find('<image>')
+        if idx < 0:
+            break
+        result = result[:idx] + result[idx + len('<image>'):]
+        dropped += 1
+
+    return result
+
+
+def _normalize_query_and_images(query: str, images: List[str]) -> Tuple[str, List[str]]:
+    """
+    Normalize one turn so query <image> count and image count are aligned.
+    Keep text position stable as much as possible:
+    - extra tags: drop earliest tags
+    - extra images: drop earliest images
+    """
+    q = query
+    imgs = list(images)
+
+    tag_count = _count_image_tags(q)
+    img_count = len(imgs)
+    if tag_count > img_count:
+        q = _drop_earliest_image_tags(q, tag_count - img_count)
+    elif img_count > tag_count:
+        imgs = imgs[img_count - tag_count:]
+
+    return q, imgs
+
+
+def _build_multimodal_context(
+    history_turns: List[Dict[str, Any]],
+    current_query: str,
+    current_images: List[str],
+    max_images: int
+) -> Tuple[List[List[str]], str, List[str]]:
+    """
+    Build history/query/images for template.encode with multimodal history.
+
+    If total image count exceeds max_images, drop earliest images first,
+    and synchronously drop the earliest corresponding <image> tag.
+    """
+    merged_turns: List[Dict[str, Any]] = []
+    for turn in history_turns:
+        q, imgs = _normalize_query_and_images(turn['query'], turn.get('images', []))
+        merged_turns.append({
+            'query': q,
+            'assistant': turn['assistant'],
+            'images': imgs,
+        })
+
+    cur_q, cur_imgs = _normalize_query_and_images(current_query, current_images)
+    current_turn = {
+        'query': cur_q,
+        'assistant': None,
+        'images': cur_imgs,
+    }
+
+    all_turns = merged_turns + [current_turn]
+    total_images = sum(len(t['images']) for t in all_turns)
+    if max_images > 0 and total_images > max_images:
+        overflow = total_images - max_images
+        logger.info(
+            f"History+current has {total_images} images > MAX_NUM={max_images}; "
+            f"dropping earliest {overflow} images."
+        )
+        while overflow > 0:
+            dropped = False
+            for t in all_turns:
+                if t['images']:
+                    t['images'].pop(0)
+                    t['query'] = _drop_earliest_image_tags(t['query'], 1)
+                    dropped = True
+                    overflow -= 1
+                    break
+            if not dropped:
+                break
+
+    history_pairs = [[t['query'], t['assistant']] for t in merged_turns]
+    all_images: List[str] = []
+    for t in all_turns:
+        all_images.extend(t['images'])
+
+    return history_pairs, current_turn['query'], all_images
 
 
 def _extract_episode_turns(sample: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -239,12 +360,92 @@ def get_template_type(model_type: str) -> str:
         raise ValueError(f"Unknown model type: {model_type}")
 
 
+def _infer_lora_domain(lora_name: str) -> str:
+    """Infer domain from lora name."""
+    if lora_name.startswith('app_lora_'):
+        return 'app'
+    if lora_name.startswith('category_lora_'):
+        return 'category'
+    return 'unknown'
+
+
+def _extract_lora_key(lora_name: str) -> str:
+    """
+    Extract canonical short key from lora name.
+    Examples:
+      app_lora_google_maps_qwen2b -> google_maps
+      category_lora_shopping -> shopping
+    """
+    name = lora_name
+    if name.startswith('app_lora_'):
+        name = name[len('app_lora_'):]
+    elif name.startswith('category_lora_'):
+        name = name[len('category_lora_'):]
+    name = re.sub(r'_(qwen2vl|qwen2b|qwen7b|internvl2(?:-2b)?)$', '', name)
+    return name
+
+
+def _parse_lora_pool(pool_text: Optional[str]) -> List[str]:
+    """Parse comma-separated pool string."""
+    if not pool_text:
+        return []
+    items = [x.strip() for x in pool_text.split(',')]
+    return [x for x in items if x]
+
+
+def _filter_lora_configs_by_constraints(
+    lora_configs,
+    lora_type: str,
+    lora_pool_items: List[str]
+):
+    """
+    Apply strict constraints:
+    1) lora_type domain isolation (app/category)
+    2) candidate pool filtering
+    """
+    # Step 1: strict domain isolation by lora_type
+    filtered = list(lora_configs)
+    if lora_type in ['app', 'category']:
+        before = len(filtered)
+        filtered = [cfg for cfg in filtered if _infer_lora_domain(cfg.lora_name) == lora_type]
+        dropped = before - len(filtered)
+        if dropped > 0:
+            logger.info(
+                f"Strict lora_type={lora_type}: dropped {dropped} out-of-domain LoRAs, kept {len(filtered)}."
+            )
+
+    # Step 2: candidate pool (full name or short key)
+    if lora_pool_items:
+        pool_set = set(lora_pool_items)
+        before = len(filtered)
+        kept = []
+        matched_items = set()
+        for cfg in filtered:
+            short_key = _extract_lora_key(cfg.lora_name)
+            if cfg.lora_name in pool_set or short_key in pool_set:
+                kept.append(cfg)
+                if cfg.lora_name in pool_set:
+                    matched_items.add(cfg.lora_name)
+                if short_key in pool_set:
+                    matched_items.add(short_key)
+        filtered = kept
+        dropped = before - len(filtered)
+        unmatched = sorted(pool_set - matched_items)
+        logger.info(
+            f"Applied lora_pool with {len(pool_set)} entries: kept {len(filtered)}, dropped {dropped}."
+        )
+        if unmatched:
+            logger.warning(f"lora_pool unmatched items: {unmatched}")
+
+    return filtered
+
+
 def prepare_model(args) -> tuple:
     """Load and prepare the base model (InternVL2 or Qwen2-VL)."""
     logger.info(f"Loading base model: {args.model_type}")
     
     model_kwargs = {
-        'device_map': 'auto',
+        'device_map': args.device_map,
         'low_cpu_mem_usage': True,
     }
     
@@ -273,6 +474,10 @@ def prepare_model(args) -> tuple:
 
 def run_logo_inference(args):
     """Main LOGO inference function."""
+    if args.gpu_id is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
+        logger.info(f"Using single GPU via CUDA_VISIBLE_DEVICES={args.gpu_id}")
+
     seed_everything(args.seed)
     
     # Set default model path if not specified
@@ -332,7 +537,18 @@ def run_logo_inference(args):
         logger.info(f"Loading category LoRA configs from: {args.category_config}")
     
     lora_configs = load_lora_configs(config_paths)
-    logger.info(f"Using lora_type={args.lora_type}, loaded {len(lora_configs)} LoRA configs")
+    logger.info(f"Loaded {len(lora_configs)} LoRA configs before constraints")
+
+    lora_pool_items = _parse_lora_pool(args.lora_pool)
+    if lora_pool_items:
+        logger.info(f"Using lora_pool with {len(lora_pool_items)} items: {lora_pool_items}")
+
+    lora_configs = _filter_lora_configs_by_constraints(
+        lora_configs=lora_configs,
+        lora_type=args.lora_type,
+        lora_pool_items=lora_pool_items
+    )
+    logger.info(f"Using lora_type={args.lora_type}, final loaded LoRA configs: {len(lora_configs)}")
     
     if not lora_configs:
         logger.error("No LoRA configs found!")
@@ -377,9 +593,10 @@ def run_logo_inference(args):
     
     # Project root for resolving paths
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    max_num = int(os.environ.get('MAX_NUM', '9'))
     
     # Run inference
-    logger.info("Starting LOGO episode inference...")
+    logger.info(f"Starting LOGO inference in {args.inference_mode} mode...")
     episode_results: List[Dict[str, Any]] = []
     total_turns = 0
     successful_turns = 0
@@ -387,16 +604,20 @@ def run_logo_inference(args):
     def infer_one_turn(
         query: str,
         images: List[str],
-        history: List[List[str]]
+        history_turns: List[Dict[str, Any]]
     ) -> str:
         try:
-            resolved_images = resolve_image_paths(images, project_root)
-            adjusted_query = prepare_query(query, len(resolved_images))
+            history_pairs, adjusted_query, all_images = _build_multimodal_context(
+                history_turns=history_turns,
+                current_query=query,
+                current_images=images,
+                max_images=max_num
+            )
             example = {
                 'query': adjusted_query,
-                'history': history,
+                'history': history_pairs,
                 'system': None,
-                'images': resolved_images,
+                'images': all_images,
                 'audios': [],
                 'videos': [],
                 'tools': None,
@@ -429,14 +650,14 @@ def run_logo_inference(args):
                     batch_size=1,
                     device=engine.model.device
                 )
-                if resolved_images:
+                if all_images:
                     response, _ = inference(
                         engine.model,
                         template,
                         adjusted_query,
-                        history=history,
+                        history=history_pairs,
                         system=None,
-                        images=resolved_images,
+                        images=all_images,
                         max_new_tokens=args.max_new_tokens,
                         temperature=args.temperature,
                         merging_type='mixture',
@@ -448,7 +669,7 @@ def run_logo_inference(args):
                         engine.model,
                         template,
                         adjusted_query,
-                        history=history,
+                        history=history_pairs,
                         system=None,
                         max_new_tokens=args.max_new_tokens,
                         temperature=args.temperature,
@@ -463,14 +684,14 @@ def run_logo_inference(args):
                     combination_type=args.combination_type
                 )
                 template.model = engine.model
-                if resolved_images:
+                if all_images:
                     response, _ = inference(
                         engine.model,
                         template,
                         adjusted_query,
-                        history=history,
+                        history=history_pairs,
                         system=None,
-                        images=resolved_images,
+                        images=all_images,
                         max_new_tokens=args.max_new_tokens,
                         temperature=args.temperature
                     )
@@ -479,7 +700,7 @@ def run_logo_inference(args):
                         engine.model,
                         template,
                         adjusted_query,
-                        history=history,
+                        history=history_pairs,
                         system=None,
                         max_new_tokens=args.max_new_tokens,
                         temperature=args.temperature
@@ -492,19 +713,23 @@ def run_logo_inference(args):
             traceback.print_exc()
             return f"ERROR: {str(e)}"
 
-    for ep_idx, sample in enumerate(tqdm(test_data, desc="LOGO Episode Inference")):
+    for ep_idx, sample in enumerate(tqdm(test_data, desc=f"LOGO {args.inference_mode.capitalize()} Inference")):
         episode_id = str(sample.get('episode_id', f'episode_{ep_idx:06d}'))
         turns = _extract_episode_turns(sample)
-        rolling_history: List[List[str]] = []
+        rolling_history_turns: List[Dict[str, Any]] = []
         ground_truths: List[str] = []
         predictions: List[str] = []
 
         for turn in turns:
             gt = turn.get('response', '')
+            current_query = turn.get('query', '')
+            current_images = resolve_image_paths(turn.get('images', []), project_root)
+            current_query, current_images = _normalize_query_and_images(current_query, current_images)
+
             pred = infer_one_turn(
-                query=turn.get('query', ''),
-                images=turn.get('images', []),
-                history=rolling_history
+                query=current_query,
+                images=current_images,
+                history_turns=rolling_history_turns
             )
             ground_truths.append(gt)
             predictions.append(pred)
@@ -512,15 +737,19 @@ def run_logo_inference(args):
             if not pred.startswith('ERROR:'):
                 successful_turns += 1
 
-            # Keep multi-turn context with model outputs.
-            rolling_history.append([
-                _strip_image_tags(turn.get('query', '')),
-                pred
-            ])
+            # Keep multi-turn context:
+            # - step mode: teacher-forcing history (ground-truth assistant)
+            # - episode mode: autoregressive history (model prediction)
+            assistant_for_history = pred if args.inference_mode == 'episode' else gt
+            rolling_history_turns.append({
+                'query': current_query,
+                'assistant': assistant_for_history,
+                'images': current_images,
+            })
 
         episode_output = {
             'episode_id': episode_id,
-            'mode': 'episode',
+            'mode': args.inference_mode,
             'num_steps': len(ground_truths),
             'ground_truths': ground_truths,
             'predictions': predictions,

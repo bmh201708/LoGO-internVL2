@@ -1,35 +1,15 @@
-===========================================
-LOGO Inference + Evaluation
-===========================================
-PYTHON_BIN : /data0/piaohongming/envs/LoGO/bin/python
-GPU_ID     : 2
-MODEL_TYPE : qwen2-vl-2b-instruct
-TEST_DATA  : /data0/piaohongming/jinyike/data/data-test/app/amazon_train.jsonl
-MODE       : step
-LORA_TYPE  : app
-LORA_POOL  : amazon,clock,ebay,etsy,flipkart,google_drive,reminder,youtube
-TOP_K      : 3
-SIGNAL     : norm
-MERGE      : mixture
-TGT_BLOCK  : -1
-TOKEN_POS  : last
-TEMP       : 0.0
-SEED       : 42
-BASELINE   : 0
-OUTPUT_DIR : /data0/piaohongming/jinyike/LoGO-internVL2/output/compat_check
-===========================================
 [INFO:swift] [LOGO] Patched PEFT Linear.forward for mixture mode support
 [INFO:swift] Successfully registered `/data0/piaohongming/jinyike/LoGO-internVL2/swift/llm/data/dataset_info.json`
 [INFO:swift] No vLLM installed, if you are using vLLM, you will get `ImportError: cannot import name 'get_vllm_engine' from 'swift.llm'`
 [INFO:swift] No LMDeploy installed, if you are using LMDeploy, you will get `ImportError: cannot import name 'prepare_lmdeploy_engine_template' from 'swift.llm'`
-[INFO:swift] Using single GPU via CUDA_VISIBLE_DEVICES=2
+[INFO:swift] Using single GPU via CUDA_VISIBLE_DEVICES=1
 [INFO:swift] Global seed set to 42
 [INFO:swift] Using default model path for qwen2-vl-2b-instruct: /data0/piaohongming/models/Qwen2-VL-2B-Instruct
 [INFO:swift] Using default app config: /data0/piaohongming/jinyike/LoGO-internVL2/config/app_loras_config_qwen2b.json
 [INFO:swift] Using default category config: /data0/piaohongming/jinyike/LoGO-internVL2/config/category_loras_config_qwen2vl.json
 [INFO:swift] Loading test data from: /data0/piaohongming/jinyike/data/data-test/app/amazon_train.jsonl
 [INFO:swift] Loaded 20 raw episodes
-[INFO:swift] Debug mode: processing 2 episodes
+[INFO:swift] Debug mode: processing 1 episodes
 [INFO:swift] Loading app LoRA configs from: /data0/piaohongming/jinyike/LoGO-internVL2/config/app_loras_config_qwen2b.json
 [INFO:swift] Loaded 14 LoRA configs from 1 files
 [INFO:swift] Loaded 14 LoRA configs before constraints
@@ -44,7 +24,7 @@ The argument `trust_remote_code` is to be used with Auto classes. It has no effe
 [DEBUG] MAX_PIXELS = 100000
 [DEBUG] MAX_NUM = 9
 [DEBUG] PYTORCH_CUDA_ALLOC_CONF = expandable_segments:True
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:45<00:45, 45.10s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:51<00:00, 22.16s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:51<00:00, 25.60s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:44<00:44, 44.89s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:50<00:00, 21.54s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:50<00:00, 25.04s/it]
 [INFO:swift] model.max_model_len: 32768
 [INFO:swift] Using template type: qwen2-vl
 [INFO:swift] Initializing LOGO engine...
@@ -63,7 +43,7 @@ The argument `trust_remote_code` is to be used with Auto classes. It has no effe
 [INFO:swift] Baseline calibration disabled - using raw signals
 [INFO:swift] LOGO Engine Info: {'loaded_adapters': ['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], 'num_adapters': 8, 'top_k': 3, 'signal_type': 'norm', 'target_block_idx': -1, 'token_position': 'last', 'combination_type': 'linear', 'use_baseline_calibration': False, 'has_embeddings': [], 'current_merged_adapter': None, 'merge_count': 0, 'baseline_computed': False}
 [INFO:swift] Starting LOGO inference in step mode...
-LOGO Step Inference:   0%|          | 0/2 [00:00<?, ?it/s][INFO:swift] Setting image_factor: 16. You can adjust this hyperparameter through the environment variable: `IMAGE_FACTOR`.
+LOGO Step Inference:   0%|          | 0/1 [00:00<?, ?it/s][INFO:swift] Setting image_factor: 16. You can adjust this hyperparameter through the environment variable: `IMAGE_FACTOR`.
 [INFO:swift] Setting resized_height: None. You can adjust this hyperparameter through the environment variable: `RESIZED_HEIGHT`.
 [INFO:swift] Setting resized_width: None. You can adjust this hyperparameter through the environment variable: `RESIZED_WIDTH`.
 [INFO:swift] Setting min_pixels: 576. You can adjust this hyperparameter through the environment variable: `MIN_PIXELS`.
@@ -98,69 +78,13 @@ The argument `trust_remote_code` is to be used with Auto classes. It has no effe
 [INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 811])
 [INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.454'), ('app_lora_etsy_qwen2b', '0.287'), ('app_lora_clock_qwen2b', '0.258')]
 [INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-LOGO Step Inference:  50%|█████     | 1/2 [00:52<00:52, 52.70s/it][INFO:swift] Extracting signals from transformer block 27
-[INFO:swift] Found 1 separate Q projection layers
-[INFO:swift] Found 1 LoRA layers in target block
-[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 195])
-[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.440'), ('app_lora_amazon_qwen2b', '0.291'), ('app_lora_etsy_qwen2b', '0.268')]
-[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-[INFO:swift] Extracting signals from transformer block 27
-[INFO:swift] Found 1 separate Q projection layers
-[INFO:swift] Found 1 LoRA layers in target block
-[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 347])
-[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.437'), ('app_lora_etsy_qwen2b', '0.282'), ('app_lora_amazon_qwen2b', '0.280')]
-[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-[INFO:swift] Extracting signals from transformer block 27
-[INFO:swift] Found 1 separate Q projection layers
-[INFO:swift] Found 1 LoRA layers in target block
-[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 509])
-[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.420'), ('app_lora_clock_qwen2b', '0.290'), ('app_lora_amazon_qwen2b', '0.289')]
-[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-[INFO:swift] Extracting signals from transformer block 27
-[INFO:swift] Found 1 separate Q projection layers
-[INFO:swift] Found 1 LoRA layers in target block
-[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 669])
-[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.418'), ('app_lora_clock_qwen2b', '0.302'), ('app_lora_amazon_qwen2b', '0.280')]
-[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-[INFO:swift] Extracting signals from transformer block 27
-[INFO:swift] Found 1 separate Q projection layers
-[INFO:swift] Found 1 LoRA layers in target block
-[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 826])
-[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.415'), ('app_lora_clock_qwen2b', '0.294'), ('app_lora_amazon_qwen2b', '0.291')]
-[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-[INFO:swift] Extracting signals from transformer block 27
-[INFO:swift] Found 1 separate Q projection layers
-[INFO:swift] Found 1 LoRA layers in target block
-[INFO:swift] Computed position_ids for Qwen2-VL: shape=torch.Size([3, 1, 984])
-[INFO:swift] Selected LoRAs: [('app_lora_flipkart_qwen2b', '0.436'), ('app_lora_etsy_qwen2b', '0.282'), ('app_lora_amazon_qwen2b', '0.282')]
-[INFO:swift] LOGO Mixture mode enabled: adapters=['app_lora_amazon_qwen2b', 'app_lora_clock_qwen2b', 'app_lora_ebay_qwen2b', 'app_lora_etsy_qwen2b', 'app_lora_flipkart_qwen2b', 'app_lora_google_drive_qwen2b', 'app_lora_reminder_qwen2b', 'app_lora_youtube_qwen2b'], weights shape=torch.Size([1, 8])
-LOGO Step Inference: 100%|██████████| 2/2 [02:06<00:00, 64.88s/it]LOGO Step Inference: 100%|██████████| 2/2 [02:06<00:00, 63.06s/it]
+LOGO Step Inference: 100%|██████████| 1/1 [01:00<00:00, 60.59s/it]LOGO Step Inference: 100%|██████████| 1/1 [01:00<00:00, 60.59s/it]
 [INFO:swift] 
 ============================================================
 [INFO:swift] Inference complete!
-[INFO:swift]   Total episodes: 2
-[INFO:swift]   Total turns: 11
-[INFO:swift]   Successful turns: 11
+[INFO:swift]   Total episodes: 1
+[INFO:swift]   Total turns: 5
+[INFO:swift]   Successful turns: 5
 [INFO:swift]   Failed turns: 0
-[INFO:swift]   Results saved to: /data0/piaohongming/jinyike/LoGO-internVL2/output/compat_check/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260322-011621.jsonl
+[INFO:swift]   Results saved to: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-004624/amazon/norm/step/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260322-004700.jsonl
 [INFO:swift] ============================================================
-Latest JSONL: /data0/piaohongming/jinyike/LoGO-internVL2/output/compat_check/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260322-011621.jsonl
-===========================================
-Running Evaluation
-===========================================
-
-[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/compat_check/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260322-011621.jsonl
-
-============================================================
-EVALUATION REPORT | Original Inference Mode: STEP
-Total Episodes Processed: 2
-Total Steps Evaluated   : 11
-------------------------------------------------------------
-Step-level Accuracy (TF-IDF > 0.6)      : 81.82%
- * Computed independently per ground-truth-primed step.
-============================================================
-
-===========================================
-Selected Metric (step)
-===========================================
-Step-level Accuracy (TF-IDF > 0.6)      : 81.82%
