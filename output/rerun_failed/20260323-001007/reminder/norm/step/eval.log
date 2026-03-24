@@ -1,0 +1,12 @@
+
+[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/rerun_failed/20260323-001007/reminder/norm/step/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260323-001257.jsonl
+
+============================================================
+EVALUATION REPORT | Original Inference Mode: STEP
+Total Episodes Processed: 20
+Total Steps Evaluated   : 165
+------------------------------------------------------------
+Step-level Accuracy (TF-IDF > 0.6)      : 53.94%
+ * Computed independently per ground-truth-primed step.
+============================================================
+

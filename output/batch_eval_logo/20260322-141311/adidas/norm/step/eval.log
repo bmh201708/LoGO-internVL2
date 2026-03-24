@@ -1,0 +1,12 @@
+
+[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-141311/adidas/norm/step/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260322-141316.jsonl
+
+============================================================
+EVALUATION REPORT | Original Inference Mode: STEP
+Total Episodes Processed: 20
+Total Steps Evaluated   : 135
+------------------------------------------------------------
+Step-level Accuracy (TF-IDF > 0.6)      : 51.85%
+ * Computed independently per ground-truth-primed step.
+============================================================
+

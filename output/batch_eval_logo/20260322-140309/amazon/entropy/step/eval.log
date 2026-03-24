@@ -1,0 +1,12 @@
+
+[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-140309/amazon/entropy/step/episode_outputs/retriever_results_qwen2vl_mixture_entropy_k3_20260322-142445.jsonl
+
+============================================================
+EVALUATION REPORT | Original Inference Mode: STEP
+Total Episodes Processed: 20
+Total Steps Evaluated   : 119
+------------------------------------------------------------
+Step-level Accuracy (TF-IDF > 0.6)      : 60.50%
+ * Computed independently per ground-truth-primed step.
+============================================================
+

@@ -6,6 +6,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Defaults (can be overridden by env vars).
 # bash infer/run_logo_and_eval.sh --merge_method mixture --inference_mode step  2>&1 | tee  /data0/piaohongming/jinyike/LoGO-internVL2/test.log
+# nohup bash infer/run_logo_and_eval.sh --gpu_id 4 --model_type qwen2-vl-7b-instruct --test_data /data0/piaohongming/jinyike/data/data-test/app/ebay_train.jsonl --signal_type entropy --merge_method mixture --inference_mode step --lora_type app --lora_pool amazon,clock,ebay,etsy,flipkart,google_drive,reminder,youtube --top_k 3 --target_block_idx -1 --token_position last --temperature 0.0 --seed 42 --no_baseline_calibration --num_samples 20 --output_dir /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-140309/ebay/entropy/step > rerun_step.nohup.log 2>&1 &
 PYTHON_BIN="${PYTHON_BIN:-/data0/piaohongming/envs/LoGO/bin/python}"
 GPU_ID="${GPU_ID:-0}"
 MODEL_TYPE="${MODEL_TYPE:-qwen2-vl-2b-instruct}"

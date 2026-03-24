@@ -3,12 +3,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-# nohup bash infer/batch_eval_logo_iid.sh --gpu_id 2 > batch_eval_logo_iid.log 2>&1 &
+
+# nohup bash infer/batch_eval_logo_ood_part2.sh --gpu_id 7 > logo_ood_2.log 2>&1 &
+
 # ===== Runtime config =====
 PYTHON_BIN="${PYTHON_BIN:-/data0/piaohongming/envs/LoGO/bin/python}"
 GPU_ID="${GPU_ID:-0}"
 DEVICE_MAP="${DEVICE_MAP:-auto}"
-MODEL_TYPE="${MODEL_TYPE:-qwen2-vl-2b-instruct}"
+MODEL_TYPE="${MODEL_TYPE:-qwen2-vl-7b-instruct}"
 TOP_K="${TOP_K:-3}"
 NUM_SAMPLES="${NUM_SAMPLES:-}"
 TARGET_BLOCK_IDX="${TARGET_BLOCK_IDX:--1}"
@@ -44,7 +46,7 @@ APP=(
 # Edit this set to control which app test files are evaluated.
 # TEST_APP can be different from APP (IID/OOD evaluation).
 TEST_APP=(
-  amazon clock ebay etsy flipkart google_drive reminder youtube
+  gmail google_maps kitchen_stories
 )
 
 usage() {

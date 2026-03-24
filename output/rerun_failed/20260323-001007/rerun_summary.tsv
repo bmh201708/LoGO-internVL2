@@ -1,0 +1,4 @@
+app	signal_type	mode	metric	result_jsonl	status
+reminder	norm	step	53.94%	/data0/piaohongming/jinyike/LoGO-internVL2/output/rerun_failed/20260323-001007/reminder/norm/step/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260323-001257.jsonl	ok
+calendar	entropy	step	54.22%	/data0/piaohongming/jinyike/LoGO-internVL2/output/rerun_failed/20260323-001007/calendar/entropy/step/episode_outputs/retriever_results_qwen2vl_mixture_entropy_k3_20260323-004838.jsonl	ok
+google_maps	norm	episode	5.00%	/data0/piaohongming/jinyike/LoGO-internVL2/output/rerun_failed/20260323-001007/google_maps/norm/episode/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260323-010157.jsonl	ok

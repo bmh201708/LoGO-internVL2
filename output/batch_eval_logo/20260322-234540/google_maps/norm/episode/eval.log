@@ -1,0 +1,12 @@
+
+[INFO] Starting Evaluation on: /data0/piaohongming/jinyike/LoGO-internVL2/output/batch_eval_logo/20260322-234540/google_maps/norm/episode/episode_outputs/retriever_results_qwen2vl_mixture_norm_k3_20260323-005148.jsonl
+
+============================================================
+EVALUATION REPORT | Original Inference Mode: EPISODE
+Total Episodes Processed: 20
+Total Steps Evaluated   : 182
+------------------------------------------------------------
+Episode-level Accuracy (All steps > 0.6): 5.00%
+ * Requires cascading success across the entire autoregressive chain.
+============================================================
+

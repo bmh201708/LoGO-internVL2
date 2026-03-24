@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qwen2-VL-7B APP Evaluation (IID/OOD)</title>
+  <style>
+    :root {
+      --bg: #f7f7f2;
+      --card: #ffffff;
+      --text: #182025;
+      --muted: #66757f;
+      --line: #d7dee3;
+      --bar: #2e6f95;
+    }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top right, #edf4f8 0%, var(--bg) 45%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1400px;
+      margin: 28px auto;
+      padding: 0 20px 30px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+    .sub {
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    .card h2 {
+      margin: 0;
+      padding: 12px 14px;
+      font-size: 18px;
+      background: #eef3f6;
+      border-bottom: 1px solid var(--line);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid #edf1f4;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    th {
+      background: #f9fbfc;
+      font-weight: 700;
+    }
+    td.metric {
+      min-width: 210px;
+    }
+    .metric-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .value {
+      width: 56px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+    .bar-bg {
+      flex: 1;
+      height: 10px;
+      border-radius: 999px;
+      background: #e7edf1;
+      overflow: hidden;
+      border: 1px solid #dae3ea;
+    }
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: var(--bar);
+      transition: width 250ms ease;
+    }
+    .legend {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Qwen2-VL-7B APP Evaluation</h1>
+    <div class="sub">IID and OOD results (mixture, norm/entropy) with rerun backfill.</div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>IID</h2>
+        <table id="iid-table">
+          <thead>
+            <tr>
+              <th>app</th>
+              <th>signal</th>
+              <th>step accuracy</th>
+              <th>episode accuracy</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>OOD</h2>
+        <table id="ood-table">
+          <thead>
+            <tr>
+              <th>app</th>
+              <th>signal</th>
+              <th>step accuracy</th>
+              <th>episode accuracy</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+
+    <div class="legend">
+      Bar length = accuracy value; colors are mapped by value range.
+    </div>
+  </div>
+
+  <script>
+    const iid = [
+      ["amazon", "norm", 61.34, 15.00],
+      ["amazon", "entropy", 60.50, 10.00],
+      ["clock", "norm", 70.41, 20.00],
+      ["clock", "entropy", 73.47, 25.00],
+      ["ebay", "norm", 67.20, 20.00],
+      ["ebay", "entropy", 64.00, 20.00],
+      ["etsy", "norm", 62.71, 20.00],
+      ["etsy", "entropy", 63.56, 20.00],
+      ["flipkart", "norm", 66.67, 20.00],
+      ["flipkart", "entropy", 66.67, 25.00],
+      ["google_drive", "norm", 56.25, 5.00],
+      ["google_drive", "entropy", 56.25, 0.00],
+      ["reminder", "norm", 53.94, 0.00],
+      ["reminder", "entropy", 53.94, 5.00],
+      ["youtube", "norm", 54.72, 15.00],
+      ["youtube", "entropy", 58.49, 15.00]
+    ];
+
+    const ood = [
+      ["adidas", "norm", 51.85, 0.00],
+      ["adidas", "entropy", 52.59, 0.00],
+      ["calendar", "norm", 53.61, 10.00],
+      ["calendar", "entropy", 54.22, 10.00],
+      ["decathlon", "norm", 52.67, 5.00],
+      ["decathlon", "entropy", 51.15, 0.00],
+      ["gmail", "norm", 55.64, 5.00],
+      ["gmail", "entropy", 54.14, 0.00],
+      ["google_maps", "norm", 48.35, 5.00],
+      ["google_maps", "entropy", 47.80, 5.00],
+      ["kitchen_stories", "norm", 54.14, 5.00],
+      ["kitchen_stories", "entropy", 53.38, 0.00]
+    ];
+
+    function colorFor(v) {
+      if (v >= 70) return "#1b7f3a";
+      if (v >= 60) return "#2f9e44";
+      if (v >= 50) return "#c18b00";
+      if (v >= 20) return "#d97904";
+      return "#b83232";
+    }
+
+    function metricCell(v) {
+      const td = document.createElement("td");
+      td.className = "metric";
+
+      const wrap = document.createElement("div");
+      wrap.className = "metric-wrap";
+
+      const value = document.createElement("span");
+      value.className = "value";
+      value.textContent = `${v.toFixed(2)}%`;
+
+      const bg = document.createElement("div");
+      bg.className = "bar-bg";
+
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      bar.style.width = `${Math.max(0, Math.min(100, v))}%`;
+      bar.style.background = colorFor(v);
+
+      bg.appendChild(bar);
+      wrap.appendChild(value);
+      wrap.appendChild(bg);
+      td.appendChild(wrap);
+      return td;
+    }
+
+    function render(tableId, rows) {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      rows.forEach(([app, signal, step, episode]) => {
+        const tr = document.createElement("tr");
+
+        const tdApp = document.createElement("td");
+        tdApp.textContent = app;
+        tr.appendChild(tdApp);
+
+        const tdSignal = document.createElement("td");
+        tdSignal.textContent = signal;
+        tr.appendChild(tdSignal);
+
+        tr.appendChild(metricCell(step));
+        tr.appendChild(metricCell(episode));
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    render("iid-table", iid);
+    render("ood-table", ood);
+  </script>
+</body>
+</html>

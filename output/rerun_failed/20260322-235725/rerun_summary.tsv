@@ -1,0 +1,4 @@
+app	signal_type	mode	metric	result_jsonl	status
+reminder	norm	step	N/A	N/A	missing_test_data
+calendar	entropy	step	N/A	N/A	missing_test_data
+google_maps	norm	episode	N/A	N/A	missing_test_data
